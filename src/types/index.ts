@@ -41,6 +41,7 @@ export interface Order {
   checkout_method: 'standard' | 'whatsapp' | 'call';
   created_at: string;
   updated_at: string;
+  order_items?: (OrderItem & { products?: Product })[];
 }
 
 export interface OrderItem {
