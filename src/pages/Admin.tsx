@@ -1,13 +1,61 @@
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Layout } from '@/components/layout/Layout';
 import { Navigate } from 'react-router-dom';
 import { ShoppingCart, Package, Users, TrendingUp } from 'lucide-react';
+import { AdminProductManager } from '@/components/admin/AdminProductManager';
+import { AdminOrderManager } from '@/components/admin/AdminOrderManager';
+import { AdminCategoryManager } from '@/components/admin/AdminCategoryManager';
+import { AdminReviewManager } from '@/components/admin/AdminReviewManager';
 
 export const Admin = () => {
   const { user, isAdmin } = useAuth();
+  const [stats, setStats] = useState({
+    totalOrders: 0,
+    totalProducts: 0,
+    totalUsers: 0,
+    totalRevenue: 0,
+  });
 
+  useEffect(() => {
+    if (user && isAdmin) {
+      fetchStats();
+    }
+  }, [user, isAdmin]);
+
+  const fetchStats = async () => {
+    try {
+      // Fetch orders count and total revenue
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('total_amount');
+      
+      // Fetch products count
+      const { data: products } = await supabase
+        .from('products')
+        .select('id');
+      
+      // Fetch users count
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id');
+
+      const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
+
+      setStats({
+        totalOrders: orders?.length || 0,
+        totalProducts: products?.length || 0,
+        totalUsers: profiles?.length || 0,
+        totalRevenue,
+      });
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
   if (!user || !isAdmin) {
     return <Navigate to="/" replace />;
   }
@@ -28,8 +76,8 @@ export const Admin = () => {
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
-              <p className="text-xs text-muted-foreground">No orders yet</p>
+              <div className="text-2xl font-bold">{stats.totalOrders}</div>
+              <p className="text-xs text-muted-foreground">All time orders</p>
             </CardContent>
           </Card>
 
@@ -39,7 +87,7 @@ export const Admin = () => {
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.totalProducts}</div>
               <p className="text-xs text-muted-foreground">Products in catalog</p>
             </CardContent>
           </Card>
@@ -50,7 +98,7 @@ export const Admin = () => {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.totalUsers}</div>
               <p className="text-xs text-muted-foreground">Registered users</p>
             </CardContent>
           </Card>
@@ -61,26 +109,37 @@ export const Admin = () => {
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">UGX 0</div>
+              <div className="text-2xl font-bold">UGX {stats.totalRevenue.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground">Total revenue</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Actions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8">
-              <h3 className="font-medium mb-2">Admin Features Coming Soon</h3>
-              <p className="text-muted-foreground">
-                Product management, order tracking, and analytics dashboard will be available here.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Management Tabs */}
+        <Tabs defaultValue="products" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="products">Products</TabsTrigger>
+            <TabsTrigger value="orders">Orders</TabsTrigger>
+            <TabsTrigger value="categories">Categories</TabsTrigger>
+            <TabsTrigger value="reviews">Reviews</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="products">
+            <AdminProductManager />
+          </TabsContent>
+          
+          <TabsContent value="orders">
+            <AdminOrderManager />
+          </TabsContent>
+          
+          <TabsContent value="categories">
+            <AdminCategoryManager />
+          </TabsContent>
+          
+          <TabsContent value="reviews">
+            <AdminReviewManager />
+          </TabsContent>
+        </Tabs>
       </div>
     </Layout>
   );
