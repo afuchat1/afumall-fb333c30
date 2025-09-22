@@ -10,31 +10,13 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            const { data: profileData } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .single();
-            setProfile(profileData);
-          }, 0);
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
-      }
-    );
+    let mounted = true;
 
-    // Check for existing session
+    // Check for existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      
+      console.log('Initial session check:', session ? 'Found session' : 'No session');
       setSession(session);
       setUser(session?.user ?? null);
       
@@ -45,8 +27,14 @@ export const useAuth = () => {
           .select('*')
           .eq('user_id', session.user.id)
           .single()
-          .then(({ data: profileData }) => {
-            setProfile(profileData);
+          .then(({ data: profileData, error }) => {
+            if (!mounted) return;
+            if (error) {
+              console.error('Error fetching profile:', error);
+            } else {
+              console.log('Profile data loaded:', profileData ? 'Success' : 'No profile');
+              setProfile(profileData);
+            }
             setLoading(false);
           });
       } else {
@@ -54,7 +42,38 @@ export const useAuth = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!mounted) return;
+        
+        console.log('Auth state changed:', event, session ? 'Has session' : 'No session');
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          setTimeout(async () => {
+            if (!mounted) return;
+            const { data: profileData } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .single();
+            if (!mounted) return;
+            console.log('Profile updated:', profileData ? 'Success' : 'No profile');
+            setProfile(profileData);
+          }, 0);
+        } else {
+          setProfile(null);
+        }
+      }
+    );
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signUp = async (email: string, password: string, name?: string) => {

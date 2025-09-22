@@ -13,16 +13,20 @@ import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { User, Package, Clock, CheckCircle, Truck, Settings } from 'lucide-react';
 
 export const Profile = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, loading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [ordersLoading, setOrdersLoading] = useState(true);
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('tab') || 'profile';
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user) return;
+      if (!user) {
+        setOrdersLoading(false);
+        return;
+      }
 
+      console.log('Fetching orders for user:', user.id);
       try {
         const { data: ordersData } = await supabase
           .from('orders')
@@ -36,20 +40,37 @@ export const Profile = () => {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
+        console.log('Orders fetched:', ordersData?.length || 0);
         if (ordersData) setOrders(ordersData as any);
       } catch (error) {
         console.error('Error fetching orders:', error);
       } finally {
-        setLoading(false);
+        setOrdersLoading(false);
       }
     };
 
     fetchOrders();
   }, [user]);
 
-  if (!user) {
+  // Show loading spinner while auth is being determined
+  if (loading) {
+    console.log('Auth loading...');
+    return (
+      <Layout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Redirect to auth only after loading is complete and user is definitely not logged in
+  if (!loading && !user) {
+    console.log('Redirecting to auth - user not found after loading complete');
     return <Navigate to="/auth" replace />;
   }
+
+  console.log('Profile page rendering - User:', user?.email, 'Profile:', profile?.name);
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -121,7 +142,7 @@ export const Profile = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
-                    <p className="font-medium">{user.email}</p>
+                    <p className="font-medium">{user?.email}</p>
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Phone</p>
@@ -134,7 +155,7 @@ export const Profile = () => {
                   <div>
                     <p className="text-sm text-muted-foreground">Member Since</p>
                     <p className="font-medium">
-                      {new Date(user.created_at).toLocaleDateString()}
+                      {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
                     </p>
                   </div>
                   <div>
@@ -155,7 +176,7 @@ export const Profile = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {loading ? (
+                {ordersLoading ? (
                   <div className="space-y-4">
                     {[...Array(3)].map((_, i) => (
                       <div key={i} className="animate-pulse">
