@@ -1,16 +1,24 @@
-import { Search, ShoppingCart, User, Menu } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogOut, Settings, Package } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export const Header = () => {
-  const { user, signOut, isAdmin } = useAuth();
+  const { user, profile, signOut, isAdmin } = useAuth();
   const { getItemCount } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50">
@@ -53,35 +61,144 @@ export const Header = () => {
 
             {/* User Menu */}
             {user ? (
-              <div className="flex items-center space-x-2">
-                <Link to="/profile">
-                  <Button variant="ghost" size="icon">
-                    <User className="h-5 w-5" />
-                  </Button>
-                </Link>
-                {isAdmin && (
-                  <Link to="/admin">
-                    <Button variant="outline" size="sm">
-                      Admin
+              <div className="hidden md:flex items-center space-x-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center space-x-2">
+                      <User className="h-4 w-4" />
+                      <span className="hidden lg:inline">{profile?.name || 'Account'}</span>
+                      <ChevronDown className="h-4 w-4" />
                     </Button>
-                  </Link>
-                )}
-                <Button variant="ghost" size="sm" onClick={signOut}>
-                  Sign Out
-                </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-2 py-1.5 text-sm font-medium">
+                      {profile?.name || user.email}
+                    </div>
+                    <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                      {user.email}
+                    </div>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center">
+                        <User className="h-4 w-4 mr-2" />
+                        My Profile
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile?tab=orders" className="flex items-center">
+                        <Package className="h-4 w-4 mr-2" />
+                        My Orders
+                      </Link>
+                    </DropdownMenuItem>
+                    {isAdmin && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem asChild>
+                          <Link to="/admin" className="flex items-center">
+                            <Settings className="h-4 w-4 mr-2" />
+                            Admin Panel
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleSignOut} className="flex items-center">
+                      <LogOut className="h-4 w-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             ) : (
-              <Link to="/auth">
+              <Link to="/auth" className="hidden md:block">
                 <Button variant="default" size="sm">
                   Sign In
                 </Button>
               </Link>
             )}
 
-            {/* Mobile Menu */}
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-            </Button>
+            {/* Mobile Navigation */}
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="md:hidden">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80">
+                <div className="flex flex-col h-full">
+                  <div className="py-6">
+                    <h2 className="text-lg font-semibold">Navigation</h2>
+                  </div>
+                  
+                  <nav className="flex-1 space-y-2">
+                    <Link
+                      to="/"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      Home
+                    </Link>
+                    <Link
+                      to="/products"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      Products
+                    </Link>
+                    <Link
+                      to="/deals"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      Deals
+                    </Link>
+                    
+                    {user ? (
+                      <>
+                        <div className="border-t my-4"></div>
+                        <Link
+                          to="/profile"
+                          className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                        >
+                          <User className="h-4 w-4 mr-2" />
+                          My Profile
+                        </Link>
+                        <Link
+                          to="/profile?tab=orders"
+                          className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                        >
+                          <Package className="h-4 w-4 mr-2" />
+                          My Orders
+                        </Link>
+                        {isAdmin && (
+                          <Link
+                            to="/admin"
+                            className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                          >
+                            <Settings className="h-4 w-4 mr-2" />
+                            Admin Panel
+                          </Link>
+                        )}
+                        <button
+                          onClick={handleSignOut}
+                          className="flex items-center w-full px-3 py-2 rounded-md hover:bg-accent text-left"
+                        >
+                          <LogOut className="h-4 w-4 mr-2" />
+                          Sign Out
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <div className="border-t my-4"></div>
+                        <Link
+                          to="/auth"
+                          className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                        >
+                          Sign In
+                        </Link>
+                      </>
+                    )}
+                  </nav>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
 

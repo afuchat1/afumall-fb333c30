@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Layout } from '@/components/layout/Layout';
-import { Navigate } from 'react-router-dom';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import { ShoppingCart, Package, Users, TrendingUp } from 'lucide-react';
 import { AdminProductManager } from '@/components/admin/AdminProductManager';
 import { AdminOrderManager } from '@/components/admin/AdminOrderManager';
@@ -56,13 +56,10 @@ export const Admin = () => {
       console.error('Error fetching stats:', error);
     }
   };
-  if (!user || !isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6 space-y-6">
+    <AuthGuard adminOnly>
+      <Layout>
+        <div className="container mx-auto px-4 py-6 space-y-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
           <Badge variant="secondary">Administrator</Badge>
@@ -140,7 +137,8 @@ export const Admin = () => {
             <AdminReviewManager />
           </TabsContent>
         </Tabs>
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </AuthGuard>
   );
 };
