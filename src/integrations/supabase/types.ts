@@ -122,6 +122,8 @@ export type Database = {
           flash_sale_end: string | null
           id: string
           image_url: string | null
+          is_active: boolean | null
+          is_featured: boolean | null
           name: string
           price_retail: number
           price_wholesale: number | null
@@ -136,6 +138,8 @@ export type Database = {
           flash_sale_end?: string | null
           id?: string
           image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
           name: string
           price_retail: number
           price_wholesale?: number | null
@@ -150,6 +154,8 @@ export type Database = {
           flash_sale_end?: string | null
           id?: string
           image_url?: string | null
+          is_active?: boolean | null
+          is_featured?: boolean | null
           name?: string
           price_retail?: number
           price_wholesale?: number | null
@@ -171,6 +177,7 @@ export type Database = {
           address: string | null
           created_at: string
           id: string
+          is_verified: boolean | null
           name: string | null
           phone: string | null
           role: string
@@ -181,6 +188,7 @@ export type Database = {
           address?: string | null
           created_at?: string
           id?: string
+          is_verified?: boolean | null
           name?: string | null
           phone?: string | null
           role?: string
@@ -191,6 +199,7 @@ export type Database = {
           address?: string | null
           created_at?: string
           id?: string
+          is_verified?: boolean | null
           name?: string | null
           phone?: string | null
           role?: string
@@ -252,7 +261,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_current_user_role: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
