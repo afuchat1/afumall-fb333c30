@@ -10,6 +10,8 @@ import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/hooks/useCart';
 import { ArrowLeft, Star, Phone, MessageCircle, Clock } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { ReviewForm } from '@/components/products/ReviewForm';
+import { useAuth } from '@/hooks/useAuth';
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -17,6 +19,7 @@ export const ProductDetail = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -46,6 +49,26 @@ export const ProductDetail = () => {
 
     fetchProduct();
   }, [id]);
+
+  const fetchReviews = async () => {
+    if (!id) return;
+    
+    try {
+      const { data: reviewsData } = await supabase
+        .from('reviews')
+        .select('*')
+        .eq('product_id', id)
+        .order('created_at', { ascending: false });
+      
+      if (reviewsData) setReviews(reviewsData);
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const handleReviewSubmitted = () => {
+    fetchReviews();
+  };
 
   if (loading) {
     return (
@@ -240,6 +263,14 @@ export const ProductDetail = () => {
           </div>
         </div>
 
+        {/* Review Form */}
+        <div className="mb-8">
+          <ReviewForm 
+            productId={product.id} 
+            onReviewSubmitted={handleReviewSubmitted}
+          />
+        </div>
+
         {/* Reviews Section */}
         <Card>
           <CardHeader>
@@ -252,7 +283,7 @@ export const ProductDetail = () => {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <span className="font-medium">
-                        {review.user_id ? 'Verified Customer' : 'Guest'}
+                        {review.reviewer_name}
                       </span>
                       <div className="flex items-center">
                         {[1, 2, 3, 4, 5].map((star) => (
@@ -264,12 +295,17 @@ export const ProductDetail = () => {
                           />
                         ))}
                       </div>
+                      {review.user_id && (
+                        <Badge variant="secondary" className="text-xs">Verified</Badge>
+                      )}
                     </div>
                     <span className="text-sm text-muted-foreground">
                       {new Date(review.created_at).toLocaleDateString()}
                     </span>
                   </div>
-                  <p className="text-muted-foreground">{review.comment}</p>
+                  {review.comment && (
+                    <p className="text-muted-foreground">{review.comment}</p>
+                  )}
                   <Separator />
                 </div>
               ))
