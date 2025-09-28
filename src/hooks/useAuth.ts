@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile } from '@/types';
+import { Profile, UserRole } from '@/types';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [userRoles, setUserRoles] = useState<UserRole[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -122,11 +123,12 @@ export const useAuth = () => {
     user,
     session,
     profile,
+    userRoles,
     loading,
     signUp,
     signIn,
     signOut,
     updateProfile,
-    isAdmin: profile?.role === 'admin'
+    isAdmin: userRoles.some(role => role.role === 'admin')
   };
 };

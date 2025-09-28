@@ -25,9 +25,14 @@ export interface Profile {
   name: string | null;
   phone: string | null;
   address: string | null;
-  role: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface UserRole {
+  id: string;
+  user_id: string;
+  role: 'admin' | 'moderator' | 'user';
 }
 
 export interface Order {

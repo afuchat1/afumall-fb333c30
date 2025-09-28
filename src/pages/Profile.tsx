@@ -13,7 +13,7 @@ import { Navigate, Link, useSearchParams } from 'react-router-dom';
 import { User, Package, Clock, CheckCircle, Truck, Settings } from 'lucide-react';
 
 export const Profile = () => {
-  const { user, profile, loading } = useAuth();
+  const { user, profile, userRoles, loading } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(true);
   const [searchParams] = useSearchParams();
@@ -160,7 +160,9 @@ export const Profile = () => {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Account Type</p>
-                    <p className="font-medium capitalize">{profile?.role || 'User'}</p>
+                    <p className="font-medium capitalize">
+                      {userRoles.length > 0 ? userRoles.map(r => r.role).join(', ') : 'User'}
+                    </p>
                   </div>
                 </div>
               </CardContent>
