@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Home } from "./pages/Home";
 import { Auth } from "./pages/Auth";
 import { Cart } from "./pages/Cart";
+import { Checkout } from "./pages/Checkout";
 import { Products } from "./pages/Products";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Category } from "./pages/Category";
@@ -26,6 +27,7 @@ const App = () => (
           <Route path="/" element={<Home />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/products" element={<Products />} />
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/category/:id" element={<Category />} />

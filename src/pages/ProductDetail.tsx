@@ -119,7 +119,9 @@ export const ProductDetail = () => {
   };
 
   const handleWhatsAppOrder = () => {
-    const message = `Hi! I'd like to order: ${product.name} - UGX ${isOnSale ? product.discount_price : product.price_retail}`;
+    const productUrl = window.location.href;
+    const price = (isOnSale ? product.discount_price : product.price_retail)?.toLocaleString();
+    const message = `Hi! I'd like to order:\n\n${product.name}\nPrice: UGX ${price}\n\nProduct link: ${productUrl}`;
     window.open(`https://wa.me/256703464913?text=${encodeURIComponent(message)}`, '_blank');
   };
 

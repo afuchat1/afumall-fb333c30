@@ -28,9 +28,14 @@ export const Cart = () => {
   }
 
   const handleWhatsAppCheckout = () => {
+    const baseUrl = window.location.origin;
     const message = `Hi! I'd like to order:\n\n${items
-      .map(item => `${item.product.name} x${item.quantity} - $${((item.product.discount_price || item.product.price_retail) * item.quantity).toFixed(2)}`)
-      .join('\n')}\n\nTotal: $${getTotal().toFixed(2)}`;
+      .map(item => {
+        const price = (item.product.discount_price || item.product.price_retail) * item.quantity;
+        const productUrl = `${baseUrl}/product/${item.product.id}`;
+        return `${item.product.name} x${item.quantity} - UGX ${price.toLocaleString()}\n${productUrl}`;
+      })
+      .join('\n\n')}\n\nTotal: UGX ${getTotal().toLocaleString()}`;
     
     window.open(`https://wa.me/256703464913?text=${encodeURIComponent(message)}`, '_blank');
   };
