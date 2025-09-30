@@ -29,10 +29,10 @@ export const useAuth = () => {
           .single()
           .then(({ data: profileData, error }) => {
             if (!mounted) return;
-            if (error) {
+            if (error && error.code !== 'PGRST116') {
               console.error('Error fetching profile:', error);
-            } else {
-              console.log('Profile data loaded:', profileData ? 'Success' : 'No profile');
+            }
+            if (profileData) {
               setProfile(profileData);
             }
             setLoading(false);
@@ -55,14 +55,18 @@ export const useAuth = () => {
           // Fetch user profile
           setTimeout(async () => {
             if (!mounted) return;
-            const { data: profileData } = await supabase
+            const { data: profileData, error } = await supabase
               .from('profiles')
               .select('*')
               .eq('user_id', session.user.id)
               .single();
             if (!mounted) return;
-            console.log('Profile updated:', profileData ? 'Success' : 'No profile');
-            setProfile(profileData);
+            if (error && error.code !== 'PGRST116') {
+              console.error('Error fetching profile:', error);
+            }
+            if (profileData) {
+              setProfile(profileData);
+            }
           }, 0);
         } else {
           setProfile(null);

@@ -75,11 +75,11 @@ export const Cart = () => {
                         <h3 className="font-semibold mb-1">{item.product.name}</h3>
                         <div className="flex items-center space-x-2 mb-2">
                           <span className="font-bold text-primary">
-                            ${currentPrice.toFixed(2)}
+                            UGX {currentPrice.toLocaleString()}
                           </span>
                           {hasDiscount && (
                             <span className="text-sm text-muted-foreground line-through">
-                              ${item.product.price_retail.toFixed(2)}
+                              UGX {item.product.price_retail.toLocaleString()}
                             </span>
                           )}
                           {hasDiscount && (
@@ -135,7 +135,7 @@ export const Cart = () => {
                 <div className="space-y-2 mb-4">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span>${getTotal().toFixed(2)}</span>
+                    <span>UGX {getTotal().toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between">
                     <span>Shipping:</span>
@@ -144,7 +144,7 @@ export const Cart = () => {
                   <hr />
                   <div className="flex justify-between font-bold text-lg">
                     <span>Total:</span>
-                    <span>${getTotal().toFixed(2)}</span>
+                    <span>UGX {getTotal().toLocaleString()}</span>
                   </div>
                 </div>
                 
