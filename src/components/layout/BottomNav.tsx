@@ -1,17 +1,19 @@
-import { Home, Tag, ShoppingCart, User } from 'lucide-react';
+import { Home, Tag, ShoppingCart, User, Package } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useCart } from '@/hooks/useCart';
+import { useAuth } from '@/hooks/useAuth';
 
 export const BottomNav = () => {
   const location = useLocation();
   const { getItemCount } = useCart();
+  const { user } = useAuth();
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
-    { icon: Tag, label: 'Deals', path: '/deals' },
+    { icon: Package, label: 'Products', path: '/products' },
     { icon: ShoppingCart, label: 'Cart', path: '/cart', badge: getItemCount() },
-    { icon: User, label: 'Account', path: '/profile' },
+    { icon: User, label: 'Account', path: user ? '/profile' : '/auth' },
   ];
 
   return (
