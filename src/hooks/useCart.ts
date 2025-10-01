@@ -3,48 +3,38 @@ import { CartItem, Product } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-// Generate or retrieve a session ID for guest users
+// Generate or retrieve session ID for guest users
 const getSessionId = () => {
-  let sessionId = localStorage.getItem('cart-session-id');
+  let sessionId = localStorage.getItem('afumall-session-id');
   if (!sessionId) {
     sessionId = crypto.randomUUID();
-    localStorage.setItem('cart-session-id', sessionId);
+    localStorage.setItem('afumall-session-id', sessionId);
   }
   return sessionId;
 };
 
 export const useCart = () => {
-  const { user } = useAuth();
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const sessionId = getSessionId();
 
-  // Fetch cart items from database
+  // Fetch cart items from Supabase
   const fetchCartItems = async () => {
     try {
-      const sessionId = getSessionId();
-      const userId = user?.id;
-
-      const { data: cartData, error } = await supabase
+      const { data, error } = await supabase
         .from('cart_items')
-        .select(`
-          id,
-          quantity,
-          product_id,
-          products (*)
-        `)
-        .or(userId ? `user_id.eq.${userId},session_id.eq.${sessionId}` : `session_id.eq.${sessionId}`);
+        .select('*, products(*)')
+        .eq(user ? 'user_id' : 'session_id', user?.id || sessionId);
 
       if (error) throw error;
 
-      if (cartData) {
-        const cartItems: CartItem[] = cartData
-          .filter(item => item.products)
-          .map(item => ({
-            product: item.products as unknown as Product,
-            quantity: item.quantity,
-          }));
-        setItems(cartItems);
-      }
+      const cartItems: CartItem[] = (data || []).map(item => ({
+        product: item.products as Product,
+        quantity: item.quantity
+      }));
+
+      setItems(cartItems);
     } catch (error) {
       console.error('Error fetching cart:', error);
     } finally {
@@ -52,15 +42,11 @@ export const useCart = () => {
     }
   };
 
+  // Initial fetch and real-time subscription
   useEffect(() => {
     fetchCartItems();
-  }, [user]);
 
-  // Subscribe to real-time changes
-  useEffect(() => {
-    const sessionId = getSessionId();
-    const userId = user?.id;
-
+    // Subscribe to real-time changes
     const channel = supabase
       .channel('cart-changes')
       .on(
@@ -69,7 +55,7 @@ export const useCart = () => {
           event: '*',
           schema: 'public',
           table: 'cart_items',
-          filter: userId ? `user_id=eq.${userId}` : `session_id=eq.${sessionId}`,
+          filter: user ? `user_id=eq.${user.id}` : `session_id=eq.${sessionId}`
         },
         () => {
           fetchCartItems();
@@ -80,41 +66,34 @@ export const useCart = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user, sessionId]);
 
   const addToCart = async (product: Product, quantity: number = 1) => {
     try {
-      const sessionId = getSessionId();
-      const userId = user?.id || null;
-
       // Check if item already exists in cart
       const { data: existing } = await supabase
         .from('cart_items')
         .select('*')
         .eq('product_id', product.id)
-        .or(userId ? `user_id.eq.${userId},session_id.eq.${sessionId}` : `session_id.eq.${sessionId}`)
-        .single();
+        .eq(user ? 'user_id' : 'session_id', user?.id || sessionId)
+        .maybeSingle();
 
       if (existing) {
         // Update quantity
-        const { error } = await supabase
+        await supabase
           .from('cart_items')
           .update({ quantity: existing.quantity + quantity })
           .eq('id', existing.id);
-
-        if (error) throw error;
       } else {
         // Insert new item
-        const { error } = await supabase
+        await supabase
           .from('cart_items')
           .insert({
-            user_id: userId,
-            session_id: sessionId,
             product_id: product.id,
             quantity,
+            user_id: user?.id || null,
+            session_id: sessionId
           });
-
-        if (error) throw error;
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
@@ -128,16 +107,19 @@ export const useCart = () => {
     }
 
     try {
-      const sessionId = getSessionId();
-      const userId = user?.id || null;
-
-      const { error } = await supabase
+      const { data: existing } = await supabase
         .from('cart_items')
-        .update({ quantity })
+        .select('id')
         .eq('product_id', productId)
-        .or(userId ? `user_id.eq.${userId},session_id.eq.${sessionId}` : `session_id.eq.${sessionId}`);
+        .eq(user ? 'user_id' : 'session_id', user?.id || sessionId)
+        .maybeSingle();
 
-      if (error) throw error;
+      if (existing) {
+        await supabase
+          .from('cart_items')
+          .update({ quantity })
+          .eq('id', existing.id);
+      }
     } catch (error) {
       console.error('Error updating quantity:', error);
     }
@@ -145,16 +127,11 @@ export const useCart = () => {
 
   const removeFromCart = async (productId: string) => {
     try {
-      const sessionId = getSessionId();
-      const userId = user?.id || null;
-
-      const { error } = await supabase
+      await supabase
         .from('cart_items')
         .delete()
         .eq('product_id', productId)
-        .or(userId ? `user_id.eq.${userId},session_id.eq.${sessionId}` : `session_id.eq.${sessionId}`);
-
-      if (error) throw error;
+        .eq(user ? 'user_id' : 'session_id', user?.id || sessionId);
     } catch (error) {
       console.error('Error removing from cart:', error);
     }
@@ -162,15 +139,10 @@ export const useCart = () => {
 
   const clearCart = async () => {
     try {
-      const sessionId = getSessionId();
-      const userId = user?.id || null;
-
-      const { error } = await supabase
+      await supabase
         .from('cart_items')
         .delete()
-        .or(userId ? `user_id.eq.${userId},session_id.eq.${sessionId}` : `session_id.eq.${sessionId}`);
-
-      if (error) throw error;
+        .eq(user ? 'user_id' : 'session_id', user?.id || sessionId);
     } catch (error) {
       console.error('Error clearing cart:', error);
     }
@@ -189,12 +161,12 @@ export const useCart = () => {
 
   return {
     items,
+    loading,
     addToCart,
     updateQuantity,
     removeFromCart,
     clearCart,
     getItemCount,
-    getTotal,
-    loading,
+    getTotal
   };
 };
