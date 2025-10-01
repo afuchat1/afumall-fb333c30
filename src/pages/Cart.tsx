@@ -7,7 +7,19 @@ import { Minus, Plus, Trash2, Phone, MessageCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Cart = () => {
-  const { items, updateQuantity, removeFromCart, getTotal, clearCart } = useCart();
+  const { items, updateQuantity, removeFromCart, getTotal, clearCart, loading } = useCart();
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading cart...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   if (items.length === 0) {
     return (

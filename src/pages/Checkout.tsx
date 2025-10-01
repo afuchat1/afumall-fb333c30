@@ -14,9 +14,21 @@ import { Loader2 } from 'lucide-react';
 
 export const Checkout = () => {
   const navigate = useNavigate();
-  const { items, getTotal, clearCart } = useCart();
+  const { items, getTotal, clearCart, loading: cartLoading } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+
+  if (cartLoading) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
   
   const [formData, setFormData] = useState({
     name: '',
