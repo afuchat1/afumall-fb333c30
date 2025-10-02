@@ -65,11 +65,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           <div className="flex items-center justify-between mb-3">
             <div className="flex flex-col">
               <span className="font-bold text-primary">
-                ${currentPrice.toFixed(2)}
+                UGX {currentPrice.toLocaleString()}
               </span>
               {hasDiscount && (
                 <span className="text-xs text-muted-foreground line-through">
-                  ${product.price_retail.toFixed(2)}
+                  UGX {product.price_retail.toLocaleString()}
                 </span>
               )}
             </div>

@@ -20,6 +20,14 @@ export const Header = () => {
     navigate('/');
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
+      setSearchQuery('');
+    }
+  };
+
   return (
     <header className="bg-background border-b border-border sticky top-0 z-50">
       <div className="container mx-auto px-4">
@@ -30,7 +38,7 @@ export const Header = () => {
           </Link>
 
           {/* Search Bar - Desktop */}
-          <div className="hidden md:flex flex-1 max-w-md mx-8">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
             <div className="relative w-full">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
@@ -40,7 +48,7 @@ export const Header = () => {
                 className="pl-10"
               />
             </div>
-          </div>
+          </form>
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-4">
@@ -203,7 +211,7 @@ export const Header = () => {
         </div>
 
         {/* Search Bar - Mobile */}
-        <div className="md:hidden pb-4">
+        <form onSubmit={handleSearch} className="md:hidden pb-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
             <Input
@@ -213,7 +221,7 @@ export const Header = () => {
               className="pl-10"
             />
           </div>
-        </div>
+        </form>
       </div>
     </header>
   );

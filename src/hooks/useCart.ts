@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { CartItem, Product } from '@/types';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
+import { toast } from '@/hooks/use-toast';
 
 // Generate or retrieve session ID for guest users
 const getSessionId = () => {
@@ -80,13 +81,15 @@ export const useCart = () => {
 
       if (existing) {
         // Update quantity
-        await supabase
+        const { error } = await supabase
           .from('cart_items')
           .update({ quantity: existing.quantity + quantity })
           .eq('id', existing.id);
+        
+        if (error) throw error;
       } else {
         // Insert new item
-        await supabase
+        const { error } = await supabase
           .from('cart_items')
           .insert({
             product_id: product.id,
@@ -94,9 +97,16 @@ export const useCart = () => {
             user_id: user?.id || null,
             session_id: sessionId
           });
+        
+        if (error) throw error;
       }
     } catch (error) {
       console.error('Error adding to cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -115,36 +125,62 @@ export const useCart = () => {
         .maybeSingle();
 
       if (existing) {
-        await supabase
+        const { error } = await supabase
           .from('cart_items')
           .update({ quantity })
           .eq('id', existing.id);
+        
+        if (error) throw error;
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update quantity. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const removeFromCart = async (productId: string) => {
     try {
-      await supabase
+      const { error } = await supabase
         .from('cart_items')
         .delete()
         .eq('product_id', productId)
         .eq(user ? 'user_id' : 'session_id', user?.id || sessionId);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Removed from cart",
+        description: "Item has been removed from your cart.",
+      });
     } catch (error) {
       console.error('Error removing from cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to remove item. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
   const clearCart = async () => {
     try {
-      await supabase
+      const { error } = await supabase
         .from('cart_items')
         .delete()
         .eq(user ? 'user_id' : 'session_id', user?.id || sessionId);
+      
+      if (error) throw error;
     } catch (error) {
       console.error('Error clearing cart:', error);
+      toast({
+        title: "Error",
+        description: "Failed to clear cart. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
