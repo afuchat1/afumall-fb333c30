@@ -75,24 +75,6 @@ export const Home = () => {
   return (
     <Layout>
       <div className="container mx-auto px-4 py-6 space-y-8">
-        {/* Hero Section */}
-        <section className="relative bg-gradient-to-r from-primary to-primary/80 rounded-xl overflow-hidden">
-          <div className="px-8 py-12 text-center text-primary-foreground">
-            <h1 className="text-3xl md:text-4xl font-bold mb-4">
-              Welcome to AfuMall
-            </h1>
-            <p className="text-lg opacity-90 mb-6">
-              Discover amazing deals on your favorite products
-            </p>
-            <Button variant="secondary" size="lg" asChild>
-              <Link to="/products">
-                Shop Now
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </section>
-
         {/* Flash Sale Section */}
         {featuredProducts.length > 0 && (
           <section>
