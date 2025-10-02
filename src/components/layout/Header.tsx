@@ -29,11 +29,11 @@ export const Header = () => {
   };
 
   return (
-    <header className="bg-background border-b border-border sticky top-0 z-50">
+    <header className="bg-header text-header-foreground border-b border-border/20 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-primary">
+          <Link to="/" className="text-2xl font-bold text-header-foreground hover:text-accent transition-colors">
             AfuMall
           </Link>
 
@@ -45,7 +45,7 @@ export const Header = () => {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
               />
             </div>
           </form>
@@ -54,12 +54,11 @@ export const Header = () => {
           <div className="flex items-center space-x-4">
             {/* Cart */}
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative">
+              <Button variant="ghost" size="icon" className="relative text-header-foreground hover:text-accent hover:bg-white/10">
                 <ShoppingCart className="h-5 w-5" />
                 {getItemCount() > 0 && (
                   <Badge 
-                    variant="destructive" 
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs"
+                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground"
                   >
                     {getItemCount()}
                   </Badge>
@@ -72,7 +71,7 @@ export const Header = () => {
               <div className="hidden md:flex items-center space-x-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2">
+                    <Button variant="ghost" className="flex items-center space-x-2 text-header-foreground hover:text-accent hover:bg-white/10">
                       <User className="h-4 w-4" />
                       <span className="hidden lg:inline">{profile?.name || 'Account'}</span>
                       <ChevronDown className="h-4 w-4" />
@@ -119,7 +118,7 @@ export const Header = () => {
               </div>
             ) : (
               <Link to="/auth" className="hidden md:block">
-                <Button variant="default" size="sm">
+                <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
                   Sign In
                 </Button>
               </Link>
@@ -128,7 +127,7 @@ export const Header = () => {
             {/* Mobile Navigation */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden">
+                <Button variant="ghost" size="icon" className="md:hidden text-header-foreground hover:text-accent hover:bg-white/10">
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
@@ -213,12 +212,12 @@ export const Header = () => {
         {/* Search Bar - Mobile */}
         <form onSubmit={handleSearch} className="md:hidden pb-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
             <Input
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
+              className="pl-10 bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
             />
           </div>
         </form>
