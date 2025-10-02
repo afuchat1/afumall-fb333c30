@@ -37,9 +37,22 @@ export const AdminCategoryManager = () => {
 
   useEffect(() => {
     fetchCategories();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('admin-categories-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
+        fetchCategories();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchCategories = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('categories')

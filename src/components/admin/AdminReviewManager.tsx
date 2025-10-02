@@ -25,9 +25,22 @@ export const AdminReviewManager = () => {
 
   useEffect(() => {
     fetchReviews();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('admin-reviews-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'reviews' }, () => {
+        fetchReviews();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchReviews = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('reviews')

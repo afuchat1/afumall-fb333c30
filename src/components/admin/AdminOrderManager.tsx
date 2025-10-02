@@ -15,9 +15,30 @@ export const AdminOrderManager = () => {
 
   useEffect(() => {
     fetchOrders();
+
+    // Real-time subscription
+    const ordersChannel = supabase
+      .channel('admin-orders-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        fetchOrders();
+      })
+      .subscribe();
+
+    const orderItemsChannel = supabase
+      .channel('admin-order-items-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'order_items' }, () => {
+        fetchOrders();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(ordersChannel);
+      supabase.removeChannel(orderItemsChannel);
+    };
   }, []);
 
   const fetchOrders = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('orders')

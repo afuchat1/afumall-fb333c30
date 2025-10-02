@@ -28,9 +28,22 @@ export const AdminProductManager = () => {
 
   useEffect(() => {
     fetchProducts();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('admin-products-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchProducts();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchProducts = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('products')

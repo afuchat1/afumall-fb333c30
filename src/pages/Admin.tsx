@@ -24,25 +24,59 @@ export const Admin = () => {
   useEffect(() => {
     if (user && isAdmin) {
       fetchStats();
+
+      // Real-time subscriptions for stats
+      const ordersChannel = supabase
+        .channel('admin-orders-stats')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+          fetchStats();
+        })
+        .subscribe();
+
+      const productsChannel = supabase
+        .channel('admin-products-stats')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+          fetchStats();
+        })
+        .subscribe();
+
+      const profilesChannel = supabase
+        .channel('admin-profiles-stats')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => {
+          fetchStats();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(ordersChannel);
+        supabase.removeChannel(productsChannel);
+        supabase.removeChannel(profilesChannel);
+      };
     }
   }, [user, isAdmin]);
 
   const fetchStats = async () => {
     try {
       // Fetch orders count and total revenue
-      const { data: orders } = await supabase
+      const { data: orders, error: ordersError } = await supabase
         .from('orders')
         .select('total_amount');
       
+      if (ordersError) throw ordersError;
+      
       // Fetch products count
-      const { data: products } = await supabase
+      const { data: products, error: productsError } = await supabase
         .from('products')
         .select('id');
       
+      if (productsError) throw productsError;
+      
       // Fetch users count
-      const { data: profiles } = await supabase
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('id');
+
+      if (profilesError) throw profilesError;
 
       const totalRevenue = orders?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
