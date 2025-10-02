@@ -48,6 +48,38 @@ export const ProductDetail = () => {
     };
 
     fetchProduct();
+
+    // Real-time subscriptions
+    const productChannel = supabase
+      .channel(`product-${id}-changes`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'products',
+        filter: `id=eq.${id}`
+      }, (payload) => {
+        if (payload.eventType === 'UPDATE') {
+          setProduct(payload.new as Product);
+        }
+      })
+      .subscribe();
+
+    const reviewsChannel = supabase
+      .channel(`reviews-${id}-changes`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'reviews',
+        filter: `product_id=eq.${id}`
+      }, () => {
+        fetchReviews();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productChannel);
+      supabase.removeChannel(reviewsChannel);
+    };
   }, [id]);
 
   const fetchReviews = async () => {

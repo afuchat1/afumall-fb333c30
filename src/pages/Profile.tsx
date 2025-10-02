@@ -50,6 +50,25 @@ export const Profile = () => {
     };
 
     fetchOrders();
+
+    // Real-time subscription for orders
+    if (user) {
+      const ordersChannel = supabase
+        .channel(`user-${user.id}-orders`)
+        .on('postgres_changes', { 
+          event: '*', 
+          schema: 'public', 
+          table: 'orders',
+          filter: `user_id=eq.${user.id}`
+        }, () => {
+          fetchOrders();
+        })
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(ordersChannel);
+      };
+    }
   }, [user]);
 
   // Show loading spinner while auth is being determined

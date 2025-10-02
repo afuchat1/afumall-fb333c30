@@ -39,6 +39,18 @@ export const Deals = () => {
     };
 
     fetchDeals();
+
+    // Real-time subscription for product updates
+    const dealsChannel = supabase
+      .channel('deals-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchDeals();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(dealsChannel);
+    };
   }, []);
 
   return (

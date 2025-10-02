@@ -18,6 +18,7 @@ export const Products = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         // Fetch categories
         const { data: categoriesData } = await supabase
@@ -52,6 +53,26 @@ export const Products = () => {
     };
 
     fetchData();
+
+    // Real-time subscriptions
+    const productsChannel = supabase
+      .channel('products-list-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    const categoriesChannel = supabase
+      .channel('categories-list-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(productsChannel);
+      supabase.removeChannel(categoriesChannel);
+    };
   }, [selectedCategory, searchQuery]);
 
   const handleCategoryChange = (categoryId: string) => {

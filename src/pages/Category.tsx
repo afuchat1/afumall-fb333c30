@@ -40,6 +40,31 @@ export const Category = () => {
     };
 
     fetchData();
+
+    // Real-time subscriptions
+    const categoryChannel = supabase
+      .channel(`category-${id}-changes`)
+      .on('postgres_changes', { 
+        event: '*', 
+        schema: 'public', 
+        table: 'categories',
+        filter: `id=eq.${id}`
+      }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    const productsChannel = supabase
+      .channel(`category-${id}-products-changes`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(categoryChannel);
+      supabase.removeChannel(productsChannel);
+    };
   }, [id]);
 
   if (loading) {
