@@ -17,6 +17,17 @@ export const Checkout = () => {
   const { items, getTotal, clearCart, loading: cartLoading } = useCart();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    address: '',
+  });
+
+  // Check if cart is empty and redirect
+  if (!cartLoading && items.length === 0) {
+    navigate('/cart');
+    return null;
+  }
 
   if (cartLoading) {
     return (
@@ -28,17 +39,6 @@ export const Checkout = () => {
         </div>
       </Layout>
     );
-  }
-  
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    address: '',
-  });
-
-  if (items.length === 0) {
-    navigate('/cart');
-    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -88,12 +88,14 @@ export const Checkout = () => {
       if (itemsError) throw itemsError;
 
       // Clear cart and redirect
-      clearCart();
+      await clearCart();
+      
       toast({
         title: "Order placed successfully!",
         description: "We'll contact you soon to confirm your order.",
       });
-      navigate('/profile');
+      
+      navigate('/profile?tab=orders');
     } catch (error) {
       console.error('Checkout error:', error);
       toast({
