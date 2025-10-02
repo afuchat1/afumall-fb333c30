@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, Upload, X } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface ProductFormProps {
@@ -33,6 +33,9 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
   });
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
 
   useEffect(() => {
     fetchCategories();
@@ -48,6 +51,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         image_url: product.image_url || '',
         flash_sale_end: product.flash_sale_end ? new Date(product.flash_sale_end) : null,
       });
+      setImagePreview(product.image_url || '');
     }
   }, [product]);
 
@@ -60,11 +64,58 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
     if (data) setCategories(data);
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return formData.image_url || null;
+
+    setUploading(true);
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('Products')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('Products')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error: any) {
+      toast({
+        title: 'Error uploading image',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Upload image if file selected
+      const uploadedImageUrl = await uploadImage();
+
       const productData = {
         name: formData.name,
         description: formData.description || null,
@@ -73,7 +124,7 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         price_wholesale: formData.price_wholesale ? parseFloat(formData.price_wholesale) : null,
         discount_price: formData.discount_price ? parseFloat(formData.discount_price) : null,
         stock: parseInt(formData.stock),
-        image_url: formData.image_url || null,
+        image_url: uploadedImageUrl,
         flash_sale_end: formData.flash_sale_end?.toISOString() || null,
       };
 
@@ -191,12 +242,60 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="image_url">Image URL</Label>
+            <Label>Product Image</Label>
+            <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-accent transition-colors">
+              {imagePreview ? (
+                <div className="relative inline-block">
+                  <img
+                    src={imagePreview}
+                    alt="Product preview"
+                    className="max-h-48 rounded-lg mx-auto"
+                  />
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="destructive"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setImageFile(null);
+                      setImagePreview('');
+                      setFormData(prev => ({ ...prev, image_url: '' }));
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
+                  <div>
+                    <Label htmlFor="image-upload" className="cursor-pointer text-accent hover:text-accent/80">
+                      Click to upload
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP up to 10MB</p>
+                  </div>
+                </div>
+              )}
+              <Input
+                id="image-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleImageChange}
+              />
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Or paste an image URL below:
+            </div>
             <Input
               id="image_url"
               type="url"
               value={formData.image_url}
-              onChange={(e) => handleChange('image_url', e.target.value)}
+              onChange={(e) => {
+                handleChange('image_url', e.target.value);
+                setImagePreview(e.target.value);
+                setImageFile(null);
+              }}
               placeholder="https://example.com/image.jpg"
             />
           </div>
@@ -234,12 +333,12 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button type="button" variant="outline" onClick={onCancel}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Saving...' : (product ? 'Update Product' : 'Create Product')}
+            <Button type="submit" disabled={loading || uploading} className="bg-accent hover:bg-accent/90">
+              {loading || uploading ? 'Saving...' : (product ? 'Update Product' : 'Create Product')}
             </Button>
           </div>
         </form>
