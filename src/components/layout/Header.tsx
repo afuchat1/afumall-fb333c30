@@ -30,35 +30,35 @@ export const Header = () => {
 
   return (
     <header className="bg-header text-header-foreground border-b border-border/20 sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+      <div className="container mx-auto px-2 md:px-4">
+        <div className="flex items-center justify-between h-12 md:h-14">
           {/* Logo */}
-          <Link to="/" className="text-2xl font-bold text-header-foreground hover:text-accent transition-colors">
+          <Link to="/" className="text-lg md:text-xl font-bold text-header-foreground hover:text-accent transition-colors">
             AfuMall
           </Link>
 
           {/* Search Bar - Desktop */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-8">
+          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4 lg:mx-8">
             <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3.5 w-3.5" />
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
+                className="pl-9 h-8 text-sm bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
               />
             </div>
           </form>
 
           {/* Navigation Icons */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 md:space-x-3">
             {/* Cart */}
             <Link to="/cart">
-              <Button variant="ghost" size="icon" className="relative text-header-foreground hover:text-accent hover:bg-white/10">
-                <ShoppingCart className="h-5 w-5" />
+              <Button variant="ghost" size="icon" className="relative text-header-foreground hover:text-accent hover:bg-white/10 h-8 w-8 md:h-9 md:w-9">
+                <ShoppingCart className="h-4 w-4 md:h-5 md:w-5" />
                 {getItemCount() > 0 && (
                   <Badge 
-                    className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs bg-accent text-accent-foreground"
+                    className="absolute -top-1 -right-1 h-4 w-4 md:h-5 md:w-5 rounded-full p-0 flex items-center justify-center text-[10px] md:text-xs bg-accent text-accent-foreground"
                   >
                     {getItemCount()}
                   </Badge>
@@ -68,32 +68,32 @@ export const Header = () => {
 
             {/* User Menu */}
             {user ? (
-              <div className="hidden md:flex items-center space-x-2">
+              <div className="hidden md:flex items-center space-x-1">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="flex items-center space-x-2 text-header-foreground hover:text-accent hover:bg-white/10">
-                      <User className="h-4 w-4" />
-                      <span className="hidden lg:inline">{profile?.name || 'Account'}</span>
-                      <ChevronDown className="h-4 w-4" />
+                    <Button variant="ghost" className="flex items-center space-x-1 text-header-foreground hover:text-accent hover:bg-white/10 h-8 text-sm px-2">
+                      <User className="h-3.5 w-3.5" />
+                      <span className="hidden lg:inline text-xs">{profile?.name || 'Account'}</span>
+                      <ChevronDown className="h-3 w-3" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    <div className="px-2 py-1.5 text-sm font-medium">
+                  <DropdownMenuContent align="end" className="w-48">
+                    <div className="px-2 py-1 text-xs font-medium">
                       {profile?.name || user.email}
                     </div>
-                    <div className="px-2 py-1.5 text-xs text-muted-foreground">
+                    <div className="px-2 py-1 text-[10px] text-muted-foreground">
                       {user.email}
                     </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="flex items-center">
-                        <User className="h-4 w-4 mr-2" />
+                      <Link to="/profile" className="flex items-center text-xs">
+                        <User className="h-3.5 w-3.5 mr-2" />
                         My Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile?tab=orders" className="flex items-center">
-                        <Package className="h-4 w-4 mr-2" />
+                      <Link to="/profile?tab=orders" className="flex items-center text-xs">
+                        <Package className="h-3.5 w-3.5 mr-2" />
                         My Orders
                       </Link>
                     </DropdownMenuItem>
@@ -101,16 +101,16 @@ export const Header = () => {
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
-                          <Link to="/admin" className="flex items-center">
-                            <Settings className="h-4 w-4 mr-2" />
+                          <Link to="/admin" className="flex items-center text-xs">
+                            <Settings className="h-3.5 w-3.5 mr-2" />
                             Admin Panel
                           </Link>
                         </DropdownMenuItem>
                       </>
                     )}
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={handleSignOut} className="flex items-center">
-                      <LogOut className="h-4 w-4 mr-2" />
+                    <DropdownMenuItem onClick={handleSignOut} className="flex items-center text-xs">
+                      <LogOut className="h-3.5 w-3.5 mr-2" />
                       Sign Out
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -118,7 +118,7 @@ export const Header = () => {
               </div>
             ) : (
               <Link to="/auth" className="hidden md:block">
-                <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground">
+                <Button size="sm" className="bg-accent hover:bg-accent/90 text-accent-foreground h-8 text-xs px-3">
                   Sign In
                 </Button>
               </Link>
@@ -127,8 +127,8 @@ export const Header = () => {
             {/* Mobile Navigation */}
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden text-header-foreground hover:text-accent hover:bg-white/10">
-                  <Menu className="h-5 w-5" />
+                <Button variant="ghost" size="icon" className="md:hidden text-header-foreground hover:text-accent hover:bg-white/10 h-8 w-8">
+                  <Menu className="h-4 w-4" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-80">
@@ -210,14 +210,14 @@ export const Header = () => {
         </div>
 
         {/* Search Bar - Mobile */}
-        <form onSubmit={handleSearch} className="md:hidden pb-4">
+        <form onSubmit={handleSearch} className="md:hidden pb-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-white/60 h-3.5 w-3.5" />
             <Input
               placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
+              className="pl-9 h-8 text-sm bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
             />
           </div>
         </form>

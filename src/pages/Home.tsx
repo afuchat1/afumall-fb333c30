@@ -74,43 +74,43 @@ export const Home = () => {
 
   return (
     <Layout>
-      <div className="space-y-8">
+      <div className="space-y-4 md:space-y-6">
         {/* Flash Sale Section */}
         {featuredProducts.length > 0 && (
-          <section className="bg-gradient-to-r from-sale/10 to-accent/10 py-6">
-            <div className="container mx-auto px-4">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center space-x-2">
-                  <Clock className="h-5 w-5 text-accent" />
-                  <h2 className="text-2xl font-bold">Flash Sale</h2>
-                  <Badge className="bg-accent text-accent-foreground">
-                    Limited Time
+          <section className="bg-gradient-to-r from-sale/10 to-accent/10 py-3 md:py-4">
+            <div className="container mx-auto px-2 md:px-4">
+              <div className="flex items-center justify-between mb-3 md:mb-4">
+                <div className="flex items-center space-x-1.5 md:space-x-2">
+                  <Clock className="h-4 w-4 md:h-5 md:w-5 text-accent" />
+                  <h2 className="text-base md:text-xl font-bold">Flash Sale</h2>
+                  <Badge className="bg-accent text-accent-foreground text-[10px] md:text-xs px-1.5 py-0">
+                    Limited
                   </Badge>
                 </div>
                 <Link to="/deals">
-                  <Button variant="outline" size="sm" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+                  <Button variant="outline" size="sm" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground text-xs md:text-sm h-7 md:h-8">
                     View All
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-1 h-3 w-3 md:h-4 md:w-4" />
                   </Button>
                 </Link>
               </div>
-              <ProductGrid products={featuredProducts.slice(0, 4)} loading={loading} />
+              <ProductGrid products={featuredProducts.slice(0, 6)} loading={loading} />
             </div>
           </section>
         )}
 
         {/* Categories Section */}
-        <section className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <section className="container mx-auto px-2 md:px-4">
+          <h2 className="text-base md:text-xl font-bold mb-3 md:mb-4">Shop by Category</h2>
+          <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
             {categories.map((category) => (
               <Link key={category.id} to={`/category/${category.id}`}>
                 <Card className="hover:shadow-lg hover:border-accent transition-all cursor-pointer">
-                  <CardContent className="p-6 text-center">
-                    <div className="w-12 h-12 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <span className="text-2xl">📱</span>
+                  <CardContent className="p-3 md:p-4 text-center">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-2">
+                      <span className="text-lg md:text-xl">📱</span>
                     </div>
-                    <h3 className="font-semibold">{category.name}</h3>
+                    <h3 className="font-medium text-xs md:text-sm">{category.name}</h3>
                   </CardContent>
                 </Card>
               </Link>
@@ -119,33 +119,33 @@ export const Home = () => {
         </section>
 
         {/* Today's Deals */}
-        <section className="bg-card py-8">
-          <div className="container mx-auto px-4">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold">Today's Deals</h2>
+        <section className="bg-card py-4 md:py-6">
+          <div className="container mx-auto px-2 md:px-4">
+            <div className="flex items-center justify-between mb-3 md:mb-4">
+              <h2 className="text-base md:text-xl font-bold">Today's Deals</h2>
               <Link to="/deals">
-                <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground hover:border-accent">
+                <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground hover:border-accent text-xs md:text-sm h-7 md:h-8">
                   View All
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-1 h-3 w-3 md:h-4 md:w-4" />
                 </Button>
               </Link>
             </div>
-            <ProductGrid products={products.slice(0, 8)} loading={loading} />
+            <ProductGrid products={products.slice(0, 12)} loading={loading} />
           </div>
         </section>
 
         {/* Featured Products */}
-        <section className="container mx-auto px-4 pb-8">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold">Featured Products</h2>
+        <section className="container mx-auto px-2 md:px-4 pb-4 md:pb-6">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <h2 className="text-base md:text-xl font-bold">Featured Products</h2>
             <Link to="/products">
-              <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground hover:border-accent">
+              <Button variant="outline" size="sm" className="hover:bg-accent hover:text-accent-foreground hover:border-accent text-xs md:text-sm h-7 md:h-8">
                 View All
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-1 h-3 w-3 md:h-4 md:w-4" />
               </Button>
             </Link>
           </div>
-          <ProductGrid products={products.slice(8, 16)} loading={loading} />
+          <ProductGrid products={products.slice(12, 24)} loading={loading} />
         </section>
       </div>
     </Layout>
