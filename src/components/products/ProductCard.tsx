@@ -30,19 +30,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <Link to={`/product/${product.id}`}>
-      <Card className="group hover:shadow-lg hover:border-accent/50 transition-all duration-300 relative overflow-hidden h-full flex flex-col">
+      <Card className="group hover:shadow-lg hover:border-accent/50 transition-all duration-300 relative overflow-hidden h-full flex flex-col rounded-2xl">
         {isOnSale && (
-          <Badge className="absolute top-1.5 left-1.5 z-10 bg-accent text-accent-foreground shadow-md text-[10px] px-1.5 py-0.5">
+          <Badge className="absolute top-1.5 left-1.5 z-10 bg-accent text-accent-foreground shadow-md text-[10px] px-1.5 py-0.5 rounded-lg">
             Flash
           </Badge>
         )}
         {hasDiscount && !isOnSale && (
-          <Badge className="absolute top-1.5 left-1.5 z-10 bg-sale text-sale-foreground shadow-md text-[10px] px-1.5 py-0.5">
+          <Badge className="absolute top-1.5 left-1.5 z-10 bg-sale text-sale-foreground shadow-md text-[10px] px-1.5 py-0.5 rounded-lg">
             -{Math.round(((product.price_retail - currentPrice) / product.price_retail) * 100)}%
           </Badge>
         )}
         
-        <div className="aspect-square overflow-hidden bg-muted">
+        <div className="aspect-square overflow-hidden bg-muted rounded-t-2xl">
           <img
             src={product.image_url || '/placeholder.svg'}
             alt={product.name}
@@ -81,7 +81,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               </div>
               
               {product.stock <= 5 && product.stock > 0 && (
-                <Badge variant="outline" className="text-[9px] md:text-[10px] border-warning text-warning px-1 py-0">
+                <Badge variant="outline" className="text-[9px] md:text-[10px] border-warning text-warning px-1 py-0 rounded-md">
                   {product.stock} left
                 </Badge>
               )}
@@ -89,7 +89,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             
             <Button
               onClick={handleAddToCart}
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm hover:shadow-md transition-all text-xs md:text-sm h-7 md:h-8"
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm hover:shadow-md transition-all text-xs md:text-sm h-7 md:h-8 rounded-xl"
               size="sm"
               disabled={product.stock === 0}
             >

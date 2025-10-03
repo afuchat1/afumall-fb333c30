@@ -105,7 +105,7 @@ export const Home = () => {
           <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-3">
             {categories.map((category) => (
               <Link key={category.id} to={`/category/${category.id}`}>
-                <Card className="hover:shadow-lg hover:border-accent transition-all cursor-pointer">
+                <Card className="hover:shadow-lg hover:border-accent transition-all cursor-pointer rounded-2xl">
                   <CardContent className="p-3 md:p-4 text-center">
                     <div className="w-8 h-8 md:w-10 md:h-10 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-2">
                       <span className="text-lg md:text-xl">📱</span>
