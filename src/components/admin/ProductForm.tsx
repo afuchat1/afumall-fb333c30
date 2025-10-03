@@ -10,8 +10,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Upload, X } from 'lucide-react';
+import { CalendarIcon, Upload, X, Zap, Tag } from 'lucide-react';
 import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -162,100 +163,195 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{product ? 'Edit Product' : 'Add New Product'}</CardTitle>
+    <Card className="rounded-2xl">
+      <CardHeader className="bg-gradient-to-r from-accent/5 to-primary/5 rounded-t-2xl">
+        <CardTitle className="flex items-center gap-2">
+          {product ? 'Edit Product' : 'Add New Product'}
+          {formData.flash_sale_end && new Date(formData.flash_sale_end) > new Date() && (
+            <Badge className="bg-accent text-accent-foreground">
+              <Zap className="h-3 w-3 mr-1" />
+              Flash Sale
+            </Badge>
+          )}
+          {formData.discount_price && (
+            <Badge className="bg-sale text-sale-foreground">
+              <Tag className="h-3 w-3 mr-1" />
+              Discounted
+            </Badge>
+          )}
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Product Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) => handleChange('name', e.target.value)}
-                required
-              />
+      <CardContent className="p-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Basic Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Basic Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Product Name *</Label>
+                <Input
+                  id="name"
+                  value={formData.name}
+                  onChange={(e) => handleChange('name', e.target.value)}
+                  placeholder="Enter product name"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category">Category</Label>
+                <Select value={formData.category_id} onValueChange={(value) => handleChange('category_id', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((category) => (
+                      <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select value={formData.category_id} onValueChange={(value) => handleChange('category_id', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price_retail">Retail Price *</Label>
-              <Input
-                id="price_retail"
-                type="number"
-                step="0.01"
-                value={formData.price_retail}
-                onChange={(e) => handleChange('price_retail', e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="price_wholesale">Wholesale Price</Label>
-              <Input
-                id="price_wholesale"
-                type="number"
-                step="0.01"
-                value={formData.price_wholesale}
-                onChange={(e) => handleChange('price_wholesale', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="discount_price">Discount Price</Label>
-              <Input
-                id="discount_price"
-                type="number"
-                step="0.01"
-                value={formData.discount_price}
-                onChange={(e) => handleChange('discount_price', e.target.value)}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="stock">Stock Quantity *</Label>
-              <Input
-                id="stock"
-                type="number"
-                value={formData.stock}
-                onChange={(e) => handleChange('stock', e.target.value)}
-                required
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+                placeholder="Describe your product..."
+                rows={3}
               />
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label>Product Image</Label>
-            <div className="border-2 border-dashed rounded-lg p-6 text-center hover:border-accent transition-colors">
+          {/* Pricing Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Pricing</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="price_retail">Retail Price (UGX) *</Label>
+                <Input
+                  id="price_retail"
+                  type="number"
+                  step="0.01"
+                  value={formData.price_retail}
+                  onChange={(e) => handleChange('price_retail', e.target.value)}
+                  placeholder="0.00"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="price_wholesale">Wholesale Price (UGX)</Label>
+                <Input
+                  id="price_wholesale"
+                  type="number"
+                  step="0.01"
+                  value={formData.price_wholesale}
+                  onChange={(e) => handleChange('price_wholesale', e.target.value)}
+                  placeholder="0.00"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="discount_price" className="flex items-center gap-1">
+                  Discount Price (UGX)
+                  <Tag className="h-3 w-3 text-sale" />
+                </Label>
+                <Input
+                  id="discount_price"
+                  type="number"
+                  step="0.01"
+                  value={formData.discount_price}
+                  onChange={(e) => handleChange('discount_price', e.target.value)}
+                  placeholder="0.00"
+                />
+                {formData.discount_price && formData.price_retail && (
+                  <p className="text-xs text-sale">
+                    {Math.round(((parseFloat(formData.price_retail) - parseFloat(formData.discount_price)) / parseFloat(formData.price_retail)) * 100)}% off
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Inventory */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Inventory</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="stock">Stock Quantity *</Label>
+                <Input
+                  id="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={(e) => handleChange('stock', e.target.value)}
+                  placeholder="0"
+                  required
+                />
+                {formData.stock && parseInt(formData.stock) <= 5 && parseInt(formData.stock) > 0 && (
+                  <p className="text-xs text-warning">Low stock warning</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label className="flex items-center gap-1">
+                  Flash Sale End Date
+                  <Zap className="h-3 w-3 text-accent" />
+                </Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {formData.flash_sale_end ? format(formData.flash_sale_end, "PPP") : "No flash sale"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0">
+                    <Calendar
+                      mode="single"
+                      selected={formData.flash_sale_end}
+                      onSelect={(date) => setFormData(prev => ({ ...prev, flash_sale_end: date || null }))}
+                      initialFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+                {formData.flash_sale_end && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFormData(prev => ({ ...prev, flash_sale_end: null }))}
+                    className="text-xs"
+                  >
+                    Clear flash sale
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Product Image */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Product Image</h3>
+            <div className="border-2 border-dashed rounded-xl p-6 text-center hover:border-accent transition-colors bg-muted/30">
               {imagePreview ? (
                 <div className="relative inline-block">
                   <img
                     src={imagePreview}
                     alt="Product preview"
-                    className="max-h-48 rounded-lg mx-auto"
+                    className="max-h-56 rounded-xl mx-auto shadow-lg"
                   />
                   <Button
                     type="button"
                     size="icon"
                     variant="destructive"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 rounded-full"
                     onClick={() => {
                       setImageFile(null);
                       setImagePreview('');
@@ -269,8 +365,8 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
                 <div className="space-y-3">
                   <Upload className="h-12 w-12 mx-auto text-muted-foreground" />
                   <div>
-                    <Label htmlFor="image-upload" className="cursor-pointer text-accent hover:text-accent/80">
-                      Click to upload
+                    <Label htmlFor="image-upload" className="cursor-pointer text-accent hover:text-accent/80 font-medium">
+                      Click to upload product image
                     </Label>
                     <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP up to 10MB</p>
                   </div>
@@ -284,60 +380,30 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
                 onChange={handleImageChange}
               />
             </div>
-            <div className="text-xs text-muted-foreground">
-              Or paste an image URL below:
+            <div className="space-y-2">
+              <div className="text-xs text-muted-foreground text-center">
+                Or paste an image URL:
+              </div>
+              <Input
+                id="image_url"
+                type="url"
+                value={formData.image_url}
+                onChange={(e) => {
+                  handleChange('image_url', e.target.value);
+                  setImagePreview(e.target.value);
+                  setImageFile(null);
+                }}
+                placeholder="https://example.com/image.jpg"
+              />
             </div>
-            <Input
-              id="image_url"
-              type="url"
-              value={formData.image_url}
-              onChange={(e) => {
-                handleChange('image_url', e.target.value);
-                setImagePreview(e.target.value);
-                setImageFile(null);
-              }}
-              placeholder="https://example.com/image.jpg"
-            />
           </div>
 
-          <div className="space-y-2">
-            <Label>Flash Sale End Date</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start text-left font-normal"
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.flash_sale_end ? format(formData.flash_sale_end, "PPP") : "No flash sale"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={formData.flash_sale_end}
-                  onSelect={(date) => setFormData(prev => ({ ...prev, flash_sale_end: date || null }))}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
-            <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              rows={4}
-            />
-          </div>
-
-          <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onCancel}>
+          {/* Action Buttons */}
+          <div className="flex justify-end space-x-2 pt-6 border-t">
+            <Button type="button" variant="outline" onClick={onCancel} className="rounded-lg">
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || uploading} className="bg-accent hover:bg-accent/90">
+            <Button type="submit" disabled={loading || uploading} className="bg-accent hover:bg-accent/90 rounded-lg">
               {loading || uploading ? 'Saving...' : (product ? 'Update Product' : 'Create Product')}
             </Button>
           </div>
