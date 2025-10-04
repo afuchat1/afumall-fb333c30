@@ -106,11 +106,11 @@ export const Home = () => {
             {categories.map((category) => (
               <Link key={category.id} to={`/category/${category.id}`}>
                 <Card className="hover:shadow-lg hover:border-accent transition-all cursor-pointer rounded-2xl">
-                  <CardContent className="p-3 md:p-4 text-center">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-1.5 md:mb-2">
-                      <span className="text-lg md:text-xl">📱</span>
+                  <CardContent className="p-2 md:p-4 text-center">
+                    <div className="w-7 h-7 md:w-10 md:h-10 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-1 md:mb-2">
+                      <span className="text-base md:text-xl">📱</span>
                     </div>
-                    <h3 className="font-medium text-xs md:text-sm">{category.name}</h3>
+                    <h3 className="font-medium text-[10px] md:text-sm truncate px-1">{category.name}</h3>
                   </CardContent>
                 </Card>
               </Link>

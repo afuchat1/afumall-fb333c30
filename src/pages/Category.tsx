@@ -86,10 +86,10 @@ export const Category = () => {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">{category?.name || 'Category'}</h1>
-          <p className="text-muted-foreground mt-2">
+      <div className="container mx-auto px-2 md:px-4 py-3 md:py-6">
+        <div className="mb-3 md:mb-6">
+          <h1 className="text-xl md:text-3xl font-bold truncate">{category?.name || 'Category'}</h1>
+          <p className="text-muted-foreground mt-1 md:mt-2 text-xs md:text-sm">
             {products.length} products found
           </p>
         </div>

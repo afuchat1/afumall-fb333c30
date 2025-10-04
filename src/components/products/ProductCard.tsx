@@ -50,38 +50,38 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           />
         </div>
         
-        <CardContent className="p-2 md:p-3 flex-1 flex flex-col">
-          <h3 className="font-medium text-xs md:text-sm line-clamp-2 mb-1.5 min-h-[2rem]">
+        <CardContent className="p-1.5 md:p-3 flex-1 flex flex-col gap-1 md:gap-1.5">
+          <h3 className="font-medium text-[11px] md:text-sm line-clamp-2 mb-0.5 leading-tight">
             {product.name}
           </h3>
           
-          <div className="flex items-center mb-2">
-            <div className="flex items-center">
+          <div className="flex items-center mb-0.5">
+            <div className="flex items-center gap-0.5">
               {[...Array(5)].map((_, i) => (
                 <Star
                   key={i}
-                  className="h-2.5 w-2.5 md:h-3 md:w-3 fill-warning text-warning"
+                  className="h-2 w-2 md:h-3 md:w-3 fill-warning text-warning"
                 />
               ))}
-              <span className="text-[10px] md:text-xs text-muted-foreground ml-1">(4.5)</span>
+              <span className="text-[9px] md:text-xs text-muted-foreground ml-1">(4.5)</span>
             </div>
           </div>
           
-          <div className="mt-auto space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex flex-col">
-                <span className="font-bold text-sm md:text-base text-foreground">
+          <div className="mt-auto space-y-1 md:space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="font-bold text-[11px] md:text-base text-foreground truncate">
                   UGX {currentPrice.toLocaleString()}
                 </span>
                 {hasDiscount && (
-                  <span className="text-[10px] md:text-xs text-muted-foreground line-through">
+                  <span className="text-[9px] md:text-xs text-muted-foreground line-through truncate">
                     UGX {product.price_retail.toLocaleString()}
                   </span>
                 )}
               </div>
               
               {product.stock <= 5 && product.stock > 0 && (
-                <Badge variant="outline" className="text-[9px] md:text-[10px] border-warning text-warning px-1 py-0 rounded-md">
+                <Badge variant="outline" className="text-[8px] md:text-[10px] border-warning text-warning px-1 py-0 rounded-md whitespace-nowrap flex-shrink-0">
                   {product.stock} left
                 </Badge>
               )}
@@ -89,12 +89,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             
             <Button
               onClick={handleAddToCart}
-              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm hover:shadow-md transition-all text-xs md:text-sm h-7 md:h-8 rounded-xl"
+              className="w-full bg-accent hover:bg-accent/90 text-accent-foreground shadow-sm hover:shadow-md transition-all text-[10px] md:text-sm h-6 md:h-8 rounded-xl px-1"
               size="sm"
               disabled={product.stock === 0}
             >
-              <ShoppingCart className="h-3 w-3 md:h-3.5 md:w-3.5 mr-1" />
-              {product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}
+              <ShoppingCart className="h-2.5 w-2.5 md:h-3.5 md:w-3.5 mr-0.5 md:mr-1 flex-shrink-0" />
+              <span className="truncate">{product.stock === 0 ? 'Out of Stock' : 'Add to Cart'}</span>
             </Button>
           </div>
         </CardContent>
