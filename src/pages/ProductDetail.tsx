@@ -6,11 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Layout } from '@/components/layout/Layout';
 import { useCart } from '@/hooks/useCart';
-import { ArrowLeft, Star, Phone, MessageCircle, Clock } from 'lucide-react';
+import { ArrowLeft, Star, Phone, MessageCircle, Clock, Mail } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ReviewForm } from '@/components/products/ReviewForm';
+import { ProductInquiryForm } from '@/components/products/ProductInquiryForm';
 import { useAuth } from '@/hooks/useAuth';
 
 export const ProductDetail = () => {
@@ -18,6 +20,7 @@ export const ProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
+  const [inquiryDialogOpen, setInquiryDialogOpen] = useState(false);
   const { addToCart } = useCart();
   const { user } = useAuth();
 
@@ -293,6 +296,25 @@ export const ProductDetail = () => {
                   Call Now
                 </Button>
               </div>
+
+              <Dialog open={inquiryDialogOpen} onOpenChange={setInquiryDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    variant="outline"
+                    className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Mail className="h-4 w-4 mr-2" />
+                    Contact Admin About This Product
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <ProductInquiryForm 
+                    productId={product.id}
+                    productName={product.name}
+                    onClose={() => setInquiryDialogOpen(false)}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>

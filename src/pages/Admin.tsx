@@ -6,11 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Layout } from '@/components/layout/Layout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { ShoppingCart, Package, Users, TrendingUp } from 'lucide-react';
+import { ShoppingCart, Package, Users, TrendingUp, MessageCircle } from 'lucide-react';
 import { AdminProductManager } from '@/components/admin/AdminProductManager';
 import { AdminOrderManager } from '@/components/admin/AdminOrderManager';
 import { AdminCategoryManager } from '@/components/admin/AdminCategoryManager';
 import { AdminReviewManager } from '@/components/admin/AdminReviewManager';
+import { AdminInquiryManager } from '@/components/admin/AdminInquiryManager';
 
 export const Admin = () => {
   const { user, isAdmin } = useAuth();
@@ -148,11 +149,15 @@ export const Admin = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="products">Products</TabsTrigger>
             <TabsTrigger value="orders">Orders</TabsTrigger>
             <TabsTrigger value="categories">Categories</TabsTrigger>
             <TabsTrigger value="reviews">Reviews</TabsTrigger>
+            <TabsTrigger value="inquiries">
+              <MessageCircle className="h-4 w-4 mr-1" />
+              Inquiries
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="products">
@@ -169,6 +174,10 @@ export const Admin = () => {
           
           <TabsContent value="reviews">
             <AdminReviewManager />
+          </TabsContent>
+          
+          <TabsContent value="inquiries">
+            <AdminInquiryManager />
           </TabsContent>
         </Tabs>
         </div>
