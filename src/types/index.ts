@@ -73,3 +73,37 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+export interface ProductImage {
+  id: string;
+  product_id: string;
+  image_url: string;
+  display_order: number;
+  is_primary: boolean;
+  created_at: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  color: string | null;
+  size: string | null;
+  sku: string | null;
+  stock: number;
+  price_adjustment: number;
+  image_url: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DeliveryZone {
+  id: string;
+  zone_name: string;
+  locations: string[];
+  delivery_charge: number;
+  min_days: number;
+  max_days: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

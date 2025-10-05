@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { Product, Review } from '@/types';
+import { Product, Review, ProductImage, ProductVariant } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,12 +12,17 @@ import { ArrowLeft, Star, Phone, MessageCircle, Clock, Mail } from 'lucide-react
 import { toast } from '@/hooks/use-toast';
 import { ReviewForm } from '@/components/products/ReviewForm';
 import { useAuth } from '@/hooks/useAuth';
+import { ProductImageGallery } from '@/components/products/ProductImageGallery';
+import { ProductVariantSelector } from '@/components/products/ProductVariantSelector';
 
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
   const [reviews, setReviews] = useState<Review[]>([]);
+  const [images, setImages] = useState<ProductImage[]>([]);
+  const [variants, setVariants] = useState<ProductVariant[]>([]);
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
   const { user } = useAuth();
@@ -39,8 +44,21 @@ export const ProductDetail = () => {
           .eq('product_id', id)
           .order('created_at', { ascending: false });
 
+        const { data: imagesData } = await supabase
+          .from('product_images')
+          .select('*')
+          .eq('product_id', id)
+          .order('display_order');
+
+        const { data: variantsData } = await supabase
+          .from('product_variants')
+          .select('*')
+          .eq('product_id', id);
+
         if (productData) setProduct(productData);
         if (reviewsData) setReviews(reviewsData);
+        if (imagesData) setImages(imagesData);
+        if (variantsData) setVariants(variantsData);
       } catch (error) {
         console.error('Error fetching product:', error);
       } finally {
@@ -77,9 +95,35 @@ export const ProductDetail = () => {
       })
       .subscribe();
 
+    const imagesChannel = supabase
+      .channel(`product-images-${id}-changes`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'product_images',
+        filter: `product_id=eq.${id}`
+      }, () => {
+        fetchProduct();
+      })
+      .subscribe();
+
+    const variantsChannel = supabase
+      .channel(`product-variants-${id}-changes`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'product_variants',
+        filter: `product_id=eq.${id}`
+      }, () => {
+        fetchProduct();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(productChannel);
       supabase.removeChannel(reviewsChannel);
+      supabase.removeChannel(imagesChannel);
+      supabase.removeChannel(variantsChannel);
     };
   }, [id]);
 
@@ -175,15 +219,15 @@ export const ProductDetail = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-8 mb-8">
-          {/* Product Image */}
+          {/* Product Image Gallery */}
           <div className="space-y-4">
-            <div className="aspect-square bg-muted rounded-lg overflow-hidden">
-              <img
-                src={product.image_url || '/placeholder.svg'}
-                alt={product.name}
-                className="w-full h-full object-cover"
-              />
-            </div>
+            <ProductImageGallery 
+              images={images.length > 0 
+                ? images.map(img => img.image_url)
+                : [product.image_url || '/placeholder.svg']
+              }
+              productName={product.name}
+            />
           </div>
 
           {/* Product Info */}
@@ -256,6 +300,16 @@ export const ProductDetail = () => {
               <h3 className="font-semibold mb-2">Description</h3>
               <p className="text-muted-foreground">{product.description}</p>
             </div>
+
+            {/* Product Variants */}
+            {variants.length > 0 && (
+              <div>
+                <ProductVariantSelector 
+                  variants={variants}
+                  onVariantChange={setSelectedVariant}
+                />
+              </div>
+            )}
 
             {/* Action Buttons */}
             <div className="space-y-3">

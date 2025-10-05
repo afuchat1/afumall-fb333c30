@@ -6,13 +6,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Layout } from '@/components/layout/Layout';
 import { AuthGuard } from '@/components/auth/AuthGuard';
-import { ShoppingCart, Package, Users, TrendingUp, MessageCircle, Store } from 'lucide-react';
+import { ShoppingCart, Package, Users, TrendingUp, MessageCircle, Store, MapPin } from 'lucide-react';
 import { AdminProductManager } from '@/components/admin/AdminProductManager';
 import { AdminOrderManager } from '@/components/admin/AdminOrderManager';
 import { AdminCategoryManager } from '@/components/admin/AdminCategoryManager';
 import { AdminReviewManager } from '@/components/admin/AdminReviewManager';
 import { AdminInquiryManager } from '@/components/admin/AdminInquiryManager';
 import { AdminSellerRequestManager } from '@/components/admin/AdminSellerRequestManager';
+import { AdminDeliveryZoneManager } from '@/components/admin/AdminDeliveryZoneManager';
 
 export const Admin = () => {
   const { user, isAdmin } = useAuth();
@@ -150,11 +151,15 @@ export const Admin = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1">
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-1">
             <TabsTrigger value="products" className="text-xs md:text-sm">Products</TabsTrigger>
             <TabsTrigger value="orders" className="text-xs md:text-sm">Orders</TabsTrigger>
             <TabsTrigger value="categories" className="text-xs md:text-sm">Categories</TabsTrigger>
             <TabsTrigger value="reviews" className="text-xs md:text-sm">Reviews</TabsTrigger>
+            <TabsTrigger value="delivery" className="text-xs md:text-sm">
+              <MapPin className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+              <span className="hidden md:inline">Delivery</span>
+            </TabsTrigger>
             <TabsTrigger value="inquiries" className="text-xs md:text-sm">
               <MessageCircle className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
               <span className="hidden md:inline">Inquiries</span>
@@ -179,6 +184,10 @@ export const Admin = () => {
           
           <TabsContent value="reviews">
             <AdminReviewManager />
+          </TabsContent>
+          
+          <TabsContent value="delivery">
+            <AdminDeliveryZoneManager />
           </TabsContent>
           
           <TabsContent value="inquiries">
