@@ -150,18 +150,18 @@ export const Admin = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="products">Products</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="reviews">Reviews</TabsTrigger>
-            <TabsTrigger value="inquiries">
-              <MessageCircle className="h-4 w-4 mr-1" />
-              Inquiries
+          <TabsList className="grid w-full grid-cols-3 md:grid-cols-6 gap-1">
+            <TabsTrigger value="products" className="text-xs md:text-sm">Products</TabsTrigger>
+            <TabsTrigger value="orders" className="text-xs md:text-sm">Orders</TabsTrigger>
+            <TabsTrigger value="categories" className="text-xs md:text-sm">Categories</TabsTrigger>
+            <TabsTrigger value="reviews" className="text-xs md:text-sm">Reviews</TabsTrigger>
+            <TabsTrigger value="inquiries" className="text-xs md:text-sm">
+              <MessageCircle className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+              <span className="hidden md:inline">Inquiries</span>
             </TabsTrigger>
-            <TabsTrigger value="sellers">
-              <Store className="h-4 w-4 mr-1" />
-              Sellers
+            <TabsTrigger value="sellers" className="text-xs md:text-sm">
+              <Store className="h-3 w-3 md:h-4 md:w-4 md:mr-1" />
+              <span className="hidden md:inline">Sellers</span>
             </TabsTrigger>
           </TabsList>
           

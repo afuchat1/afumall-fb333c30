@@ -17,8 +17,8 @@ export const BottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-gradient-to-t from-background via-background to-background/95 backdrop-blur-lg border-t border-border/50 z-50 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
-      <div className="flex justify-around items-center py-2">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-lg border-t border-border/50 z-50">
+      <div className="flex justify-around items-center py-1">
         {navItems.map(({ icon: Icon, label, path, badge }) => {
           const isActive = location.pathname === path;
           
@@ -26,25 +26,21 @@ export const BottomNav = () => {
             <Link
               key={path}
               to={path}
-              className={`flex flex-col items-center py-1.5 px-2 min-w-0 relative transition-all duration-300 ${
-                isActive ? 'text-accent scale-105' : 'text-muted-foreground'
+              className={`flex flex-col items-center py-1 px-1.5 min-w-0 relative transition-all ${
+                isActive ? 'text-accent' : 'text-muted-foreground'
               }`}
             >
               <div className="relative">
-                <div className={`${isActive ? 'bg-accent/10 p-2 rounded-xl' : ''}`}>
-                  <Icon className={`${isActive ? 'h-5 w-5' : 'h-4.5 w-4.5'} transition-all`} />
-                </div>
+                <Icon className="h-4 w-4" />
                 {badge && badge > 0 && (
                   <Badge 
-                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full p-0 flex items-center justify-center text-[9px] bg-accent text-accent-foreground animate-pulse"
+                    className="absolute -top-1.5 -right-1.5 h-3.5 w-3.5 rounded-full p-0 flex items-center justify-center text-[8px] bg-accent text-accent-foreground"
                   >
                     {badge}
                   </Badge>
                 )}
               </div>
-              <span className={`text-[10px] mt-1 truncate font-medium transition-all ${
-                isActive ? 'scale-105' : ''
-              }`}>{label}</span>
+              <span className="text-[9px] mt-0.5 truncate font-medium">{label}</span>
             </Link>
           );
         })}

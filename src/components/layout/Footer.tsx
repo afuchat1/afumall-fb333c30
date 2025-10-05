@@ -3,7 +3,7 @@ import { Facebook, Instagram, Twitter, Mail, Phone, MapPin, Store } from 'lucide
 
 export const Footer = () => {
   return (
-    <footer className="bg-gradient-to-b from-background to-muted/30 border-t border-border mt-16">
+    <footer className="bg-gradient-to-b from-background to-muted/30 border-t border-border mt-16 hidden md:block">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* About Section */}
@@ -41,8 +41,11 @@ export const Footer = () => {
               <Link to="/deals" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                 Deals
               </Link>
-              <Link to="/categories" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                Categories
+              <Link to="/about" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                About Us
+              </Link>
+              <Link to="/contact" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                Contact
               </Link>
             </nav>
           </div>
@@ -65,13 +68,17 @@ export const Footer = () => {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold uppercase tracking-wide">Contact Us</h3>
             <div className="flex flex-col space-y-3">
-              <a href="mailto:support@afumall.com" className="text-sm text-muted-foreground hover:text-accent transition-colors flex items-center gap-2">
+              <a href="mailto:Afuchatgroup@gmail.com" className="text-sm text-muted-foreground hover:text-accent transition-colors flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                support@afumall.com
+                Afuchatgroup@gmail.com
               </a>
-              <a href="tel:+256123456789" className="text-sm text-muted-foreground hover:text-accent transition-colors flex items-center gap-2">
+              <a href="tel:+256703464913" className="text-sm text-muted-foreground hover:text-accent transition-colors flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                +256 123 456 789
+                +256703464913
+              </a>
+              <a href="tel:+256760635265" className="text-sm text-muted-foreground hover:text-accent transition-colors flex items-center gap-2">
+                <Phone className="h-4 w-4" />
+                +256760635265
               </a>
               <div className="text-sm text-muted-foreground flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-1 flex-shrink-0" />
@@ -87,12 +94,15 @@ export const Footer = () => {
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} AfuMall. All rights reserved.
             </p>
-            <div className="flex space-x-6">
+            <div className="flex flex-wrap gap-4 justify-center md:justify-end">
               <Link to="/privacy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
                 Privacy Policy
               </Link>
               <Link to="/terms" className="text-sm text-muted-foreground hover:text-accent transition-colors">
-                Terms of Service
+                Terms & Conditions
+              </Link>
+              <Link to="/return-policy" className="text-sm text-muted-foreground hover:text-accent transition-colors">
+                Return Policy
               </Link>
             </div>
           </div>
