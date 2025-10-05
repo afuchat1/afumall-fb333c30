@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Layout } from '@/components/layout/Layout';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProductFilters, FilterOptions } from '@/components/products/ProductFilters';
@@ -15,6 +15,7 @@ export const Products = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [aiSearchActive, setAiSearchActive] = useState(false);
   const [aiRanking, setAiRanking] = useState(false);
   const [maxPrice, setMaxPrice] = useState(1000);
@@ -160,7 +161,7 @@ export const Products = () => {
     setAiSearchActive(false);
     sessionStorage.removeItem('aiSearchResults');
     sessionStorage.removeItem('aiSearchQuery');
-    window.location.href = '/products';
+    navigate('/products', { replace: true });
   };
 
   const handleFiltersChange = (newFilters: FilterOptions) => {

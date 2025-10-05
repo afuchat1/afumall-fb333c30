@@ -1,5 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from './button';
+import { useNavigate } from 'react-router-dom';
 import { AlertTriangle } from 'lucide-react';
 
 interface Props {
@@ -27,7 +28,6 @@ export class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     this.setState({ hasError: false, error: undefined });
-    window.location.href = '/';
   };
 
   public render() {
@@ -62,8 +62,8 @@ export class ErrorBoundary extends Component<Props, State> {
               <Button onClick={() => window.location.reload()}>
                 Refresh Page
               </Button>
-              <Button variant="outline" onClick={this.handleReset}>
-                Go Home
+              <Button variant="outline" asChild>
+                <a href="/">Go Home</a>
               </Button>
             </div>
           </div>
