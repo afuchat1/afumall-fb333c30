@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
 export const SellerAddProduct = () => {
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -23,6 +23,10 @@ export const SellerAddProduct = () => {
     image_url: '',
   });
 
+  if (!user) {
+    return <Navigate to="/auth" replace />;
+  }
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
@@ -32,16 +36,6 @@ export const SellerAddProduct = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!user) {
-      toast({
-        title: 'Error',
-        description: 'You must be logged in to add products',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setLoading(true);
 
     try {
@@ -52,48 +46,34 @@ export const SellerAddProduct = () => {
         stock: parseInt(formData.stock),
         image_url: formData.image_url || null,
         seller_id: user.id,
-        is_approved: false, // Requires admin approval
+        is_approved: false,
       });
 
       if (error) throw error;
 
       toast({
-        title: 'Success',
-        description: 'Product submitted for approval. An admin will review it shortly.',
+        title: "Product submitted!",
+        description: "Your product is pending admin approval",
       });
 
       navigate('/seller/dashboard');
     } catch (error: any) {
-      console.error('Error adding product:', error);
       toast({
-        title: 'Error',
-        description: error.message || 'Failed to add product',
-        variant: 'destructive',
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
     }
   };
 
-  if (authLoading) {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-8">
-          <p className="text-center">Loading...</p>
-        </div>
-      </Layout>
-    );
-  }
-
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
+      <div className="container mx-auto px-4 py-8 max-w-2xl">
         <Button
           variant="ghost"
+          size="sm"
           onClick={() => navigate('/seller/dashboard')}
           className="mb-6"
         >
@@ -105,11 +85,11 @@ export const SellerAddProduct = () => {
           <CardHeader>
             <CardTitle>Add New Product</CardTitle>
             <CardDescription>
-              Your product will be reviewed by an admin before it appears on the site
+              Your product will be reviewed by admin before going live
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="name">Product Name *</Label>
                 <Input
@@ -134,36 +114,33 @@ export const SellerAddProduct = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="price_retail">Price (UGX) *</Label>
-                  <Input
-                    id="price_retail"
-                    name="price_retail"
-                    type="number"
-                    value={formData.price_retail}
-                    onChange={handleChange}
-                    required
-                    placeholder="0"
-                    min="0"
-                    step="1"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="price_retail">Price (UGX) *</Label>
+                <Input
+                  id="price_retail"
+                  name="price_retail"
+                  type="number"
+                  value={formData.price_retail}
+                  onChange={handleChange}
+                  required
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
 
-                <div>
-                  <Label htmlFor="stock">Stock Quantity *</Label>
-                  <Input
-                    id="stock"
-                    name="stock"
-                    type="number"
-                    value={formData.stock}
-                    onChange={handleChange}
-                    required
-                    placeholder="0"
-                    min="0"
-                    step="1"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="stock">Stock Quantity *</Label>
+                <Input
+                  id="stock"
+                  name="stock"
+                  type="number"
+                  value={formData.stock}
+                  onChange={handleChange}
+                  required
+                  placeholder="0"
+                  min="0"
+                />
               </div>
 
               <div>
@@ -178,7 +155,7 @@ export const SellerAddProduct = () => {
                 />
               </div>
 
-              <div className="flex gap-4">
+              <div className="flex gap-4 pt-4">
                 <Button
                   type="button"
                   variant="outline"

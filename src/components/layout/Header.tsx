@@ -142,6 +142,12 @@ export const Header = () => {
                         My Orders
                       </Link>
                     </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/seller/dashboard" className="flex items-center text-xs">
+                        <Package className="h-3.5 w-3.5 mr-2" />
+                        My Store
+                      </Link>
+                    </DropdownMenuItem>
                     {isAdmin && (
                       <>
                         <DropdownMenuSeparator />

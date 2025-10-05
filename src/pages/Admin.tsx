@@ -14,6 +14,7 @@ import { AdminReviewManager } from '@/components/admin/AdminReviewManager';
 import { AdminInquiryManager } from '@/components/admin/AdminInquiryManager';
 import { AdminSellerRequestManager } from '@/components/admin/AdminSellerRequestManager';
 import { AdminDeliveryZoneManager } from '@/components/admin/AdminDeliveryZoneManager';
+import { AdminProductApproval } from '@/components/admin/AdminProductApproval';
 
 export const Admin = () => {
   const { user, isAdmin } = useAuth();
@@ -151,8 +152,9 @@ export const Admin = () => {
 
         {/* Management Tabs */}
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 md:grid-cols-7 gap-1">
+          <TabsList className="grid w-full grid-cols-4 md:grid-cols-8 gap-1">
             <TabsTrigger value="products" className="text-xs md:text-sm">Products</TabsTrigger>
+            <TabsTrigger value="approvals" className="text-xs md:text-sm">Approvals</TabsTrigger>
             <TabsTrigger value="orders" className="text-xs md:text-sm">Orders</TabsTrigger>
             <TabsTrigger value="categories" className="text-xs md:text-sm">Categories</TabsTrigger>
             <TabsTrigger value="reviews" className="text-xs md:text-sm">Reviews</TabsTrigger>
@@ -172,6 +174,10 @@ export const Admin = () => {
           
           <TabsContent value="products">
             <AdminProductManager />
+          </TabsContent>
+          
+          <TabsContent value="approvals">
+            <AdminProductApproval />
           </TabsContent>
           
           <TabsContent value="orders">
