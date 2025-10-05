@@ -5,7 +5,7 @@ import { ProductCarousel } from '@/components/products/ProductCarousel';
 import { ProductGrid } from '@/components/products/ProductGrid';
 import { Layout } from '@/components/layout/Layout';
 import { Link } from 'react-router-dom';
-import { ChevronRight, Zap, TrendingUp, Star, Clock } from 'lucide-react';
+import { ChevronRight, Zap, TrendingUp, Star, Clock, Grid3x3 } from 'lucide-react';
 
 export const Home = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -81,6 +81,12 @@ export const Home = () => {
         <section className="sticky top-16 z-10 bg-background/95 backdrop-blur-sm border-b py-2 md:py-3 shadow-sm">
           <div className="container mx-auto px-2 md:px-4">
             <div className="flex items-center gap-2 md:gap-4 overflow-x-auto scrollbar-hide">
+              <Link to="/products" className="flex-shrink-0">
+                <div className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs md:text-sm font-medium whitespace-nowrap">
+                  <Grid3x3 className="h-3 w-3" />
+                  All
+                </div>
+              </Link>
               {categories.map((category) => (
                 <Link
                   key={category.id}
@@ -93,11 +99,6 @@ export const Home = () => {
                   </div>
                 </Link>
               ))}
-              <Link to="/products" className="flex-shrink-0">
-                <div className="px-3 py-1.5 rounded-full bg-primary text-primary-foreground text-xs md:text-sm font-medium whitespace-nowrap">
-                  View All
-                </div>
-              </Link>
             </div>
           </div>
         </section>

@@ -1,4 +1,4 @@
-import { Search, ShoppingCart, User, Menu, ChevronDown, LogOut, Settings, Package } from 'lucide-react';
+import { Search, ShoppingCart, User, Menu, ChevronDown, LogOut, Settings, Package, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -8,16 +8,48 @@ import { useAuth } from '@/hooks/useAuth';
 import { useCart } from '@/hooks/useCart';
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
+import { Product } from '@/types';
+import { toast } from 'sonner';
 
 export const Header = () => {
   const { user, profile, signOut, isAdmin } = useAuth();
   const { getItemCount } = useCart();
   const [searchQuery, setSearchQuery] = useState('');
+  const [searching, setSearching] = useState(false);
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleAISearch = async () => {
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search query');
+      return;
+    }
+
+    setSearching(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-search', {
+        body: { query: searchQuery.trim() }
+      });
+
+      if (error) throw error;
+
+      if (data?.products) {
+        sessionStorage.setItem('aiSearchResults', JSON.stringify(data.products));
+        sessionStorage.setItem('aiSearchQuery', searchQuery.trim());
+        navigate('/products');
+        setSearchQuery('');
+      }
+    } catch (error: any) {
+      console.error('AI search error:', error);
+      toast.error('AI search failed. Please try again.');
+    } finally {
+      setSearching(false);
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -39,17 +71,29 @@ export const Header = () => {
           </Link>
 
           {/* Search Bar - Desktop */}
-          <form onSubmit={handleSearch} className="hidden md:flex flex-1 max-w-md mx-4 lg:mx-8">
-            <div className="relative w-full">
-              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3.5 w-3.5" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 h-8 text-sm bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
-              />
-            </div>
-          </form>
+          <div className="hidden md:flex flex-1 max-w-md mx-4 lg:mx-8 gap-1">
+            <form onSubmit={handleSearch} className="flex-1">
+              <div className="relative w-full">
+                <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-muted-foreground h-3.5 w-3.5" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 h-8 text-sm bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
+                />
+              </div>
+            </form>
+            <Button 
+              type="button"
+              onClick={handleAISearch}
+              disabled={searching || !searchQuery.trim()}
+              size="sm"
+              className="h-8 px-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent/40"
+              title="AI Search"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+            </Button>
+          </div>
 
           {/* Navigation Icons */}
           <div className="flex items-center space-x-2 md:space-x-3">
@@ -232,17 +276,29 @@ export const Header = () => {
         </div>
 
         {/* Search Bar - Mobile */}
-        <form onSubmit={handleSearch} className="md:hidden pb-3">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-white/60 h-3.5 w-3.5" />
-            <Input
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 h-8 text-sm bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
-            />
-          </div>
-        </form>
+        <div className="md:hidden pb-3 flex gap-1">
+          <form onSubmit={handleSearch} className="flex-1">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-white/60 h-3.5 w-3.5" />
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 h-8 text-sm bg-white/10 border-white/20 text-header-foreground placeholder:text-white/60 focus:bg-white focus:text-foreground"
+              />
+            </div>
+          </form>
+          <Button 
+            type="button"
+            onClick={handleAISearch}
+            disabled={searching || !searchQuery.trim()}
+            size="sm"
+            className="h-8 px-2 bg-accent/20 hover:bg-accent/30 text-accent-foreground border border-accent/40"
+            title="AI Search"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+          </Button>
+        </div>
       </div>
     </header>
   );

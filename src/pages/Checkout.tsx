@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 
 export const Checkout = () => {
   const navigate = useNavigate();
@@ -109,9 +110,10 @@ export const Checkout = () => {
   };
 
   return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-6">Checkout</h1>
+    <AuthGuard fallback="/auth">
+      <Layout>
+        <div className="container mx-auto px-2 md:px-4 py-3 md:py-6 font-sans">
+          <h1 className="text-xl md:text-2xl font-bold font-heading mb-4 md:mb-6">Checkout</h1>
         
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Checkout Form */}
@@ -208,7 +210,8 @@ export const Checkout = () => {
             </Card>
           </div>
         </div>
-      </div>
-    </Layout>
+        </div>
+      </Layout>
+    </AuthGuard>
   );
 };

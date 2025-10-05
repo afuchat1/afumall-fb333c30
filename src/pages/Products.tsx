@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types';
 import { ProductGrid } from '@/components/products/ProductGrid';
-import { AISearch } from '@/components/products/AISearch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Layout } from '@/components/layout/Layout';
 import { useSearchParams } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { Sparkles, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ProductFilters, FilterOptions } from '@/components/products/ProductFilters';
 
 export const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -17,7 +17,15 @@ export const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [aiSearchActive, setAiSearchActive] = useState(false);
   const [aiRanking, setAiRanking] = useState(false);
-  const { toast } = useToast();
+  const [maxPrice, setMaxPrice] = useState(1000);
+  const [filters, setFilters] = useState<FilterOptions>({
+    priceRange: [0, 1000],
+    inStock: false,
+    isNewArrival: false,
+    isFeatured: false,
+    isPopular: false,
+    isFlashSale: false,
+  });
   
   const selectedCategory = searchParams.get('category');
   const searchQuery = searchParams.get('search');
@@ -28,6 +36,20 @@ export const Products = () => {
       
       setLoading(true);
       try {
+        // Check for AI search results from sessionStorage
+        const aiResults = sessionStorage.getItem('aiSearchResults');
+        const aiQuery = sessionStorage.getItem('aiSearchQuery');
+        
+        if (aiResults && aiQuery) {
+          const parsedProducts = JSON.parse(aiResults);
+          setProducts(parsedProducts);
+          setAiSearchActive(true);
+          sessionStorage.removeItem('aiSearchResults');
+          sessionStorage.removeItem('aiSearchQuery');
+          setLoading(false);
+          return;
+        }
+
         // Fetch categories
         const { data: categoriesData } = await supabase
           .from('categories')
@@ -52,7 +74,18 @@ export const Products = () => {
         const { data: productsData } = await query;
 
         if (categoriesData) setCategories(categoriesData);
-        if (productsData) setProducts(productsData);
+        if (productsData) {
+          // Calculate max price for filters
+          const prices = productsData.map(p => Number(p.price_retail));
+          const calculatedMaxPrice = Math.ceil(Math.max(...prices, 100));
+          setMaxPrice(calculatedMaxPrice);
+          setFilters(prev => ({
+            ...prev,
+            priceRange: [0, calculatedMaxPrice]
+          }));
+          
+          setProducts(productsData);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -109,50 +142,69 @@ export const Products = () => {
       if (error) throw error;
 
       if (data?.error) {
-        toast({
-          title: "AI ranking failed",
-          description: data.error,
-          variant: "destructive",
-        });
+        toast.error('AI ranking failed: ' + data.error);
         return;
       }
 
       setProducts(data.products || products);
-      toast({
-        title: "AI Ranking Applied",
-        description: "Products intelligently rearranged",
-      });
+      toast.success('AI Ranking Applied - Products intelligently rearranged');
     } catch (error) {
       console.error('AI ranking error:', error);
-      toast({
-        title: "Ranking failed",
-        description: "Please try again",
-        variant: "destructive",
-      });
+      toast.error('Ranking failed. Please try again');
     } finally {
       setAiRanking(false);
     }
   };
 
-  const handleSearchResults = (searchResults: Product[]) => {
-    setProducts(searchResults);
-    setAiSearchActive(true);
-  };
-
   const handleResetSearch = () => {
     setAiSearchActive(false);
+    sessionStorage.removeItem('aiSearchResults');
+    sessionStorage.removeItem('aiSearchQuery');
+    window.location.href = '/products';
   };
+
+  const handleFiltersChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+  };
+
+  // Apply filters to products
+  const filteredProducts = products.filter(product => {
+    const price = Number(product.discount_price || product.price_retail);
+    
+    // Price range filter
+    if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
+      return false;
+    }
+
+    // Stock filter
+    if (filters.inStock && product.stock <= 0) {
+      return false;
+    }
+
+    // Tag filters
+    if (filters.isNewArrival && !product.is_new_arrival) return false;
+    if (filters.isFeatured && !product.is_featured) return false;
+    if (filters.isPopular && !product.is_popular) return false;
+    if (filters.isFlashSale && !product.is_flash_sale) return false;
+
+    return true;
+  });
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
-          <h1 className="text-3xl font-bold">All Products</h1>
+      <div className="container mx-auto px-2 md:px-4 py-3 md:py-6 font-sans">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3 md:gap-0">
+          <h1 className="text-xl md:text-3xl font-bold font-heading">All Products</h1>
           
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center gap-2 w-full md:w-auto">
+            <ProductFilters 
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              maxPrice={maxPrice}
+            />
             <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by category" />
+              <SelectTrigger className="flex-1 md:w-48 h-9 text-sm">
+                <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
@@ -166,37 +218,43 @@ export const Products = () => {
           </div>
         </div>
 
-        <AISearch 
-          onResults={handleSearchResults} 
-          onLoading={setLoading}
-        />
-
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
           {aiSearchActive && (
-            <Button onClick={handleResetSearch} variant="outline">
-              Show All Products
+            <Button onClick={handleResetSearch} variant="outline" size="sm" className="gap-1">
+              <X className="h-3 w-3" />
+              Clear AI Search
             </Button>
           )}
           <Button 
             onClick={handleAIRanking} 
             disabled={aiRanking || loading}
             variant="secondary"
-            className="gap-2"
+            size="sm"
+            className="gap-1"
           >
-            <Sparkles className="h-4 w-4" />
+            <Sparkles className="h-3 w-3" />
             {aiRanking ? 'Ranking...' : 'AI Smart Sort'}
           </Button>
         </div>
 
         {searchQuery && (
-          <div className="mb-6">
-            <p className="text-muted-foreground">
-              Search results for "{searchQuery}" ({products.length} products found)
+          <div className="mb-4 md:mb-6">
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Search results for "{searchQuery}" ({filteredProducts.length} products found)
             </p>
           </div>
         )}
 
-        <ProductGrid products={products} loading={loading} />
+        {aiSearchActive && (
+          <div className="mb-4 md:mb-6">
+            <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
+              <Sparkles className="h-3 w-3 text-primary" />
+              AI Search Results ({filteredProducts.length} products)
+            </p>
+          </div>
+        )}
+
+        <ProductGrid products={filteredProducts} loading={loading} />
       </div>
     </Layout>
   );
