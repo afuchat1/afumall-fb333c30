@@ -332,6 +332,48 @@ export type Database = {
           },
         ]
       }
+      seller_requests: {
+        Row: {
+          admin_notes: string | null
+          business_address: string | null
+          business_description: string
+          business_name: string
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          business_address?: string | null
+          business_description: string
+          business_name: string
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          business_address?: string | null
+          business_description?: string
+          business_name?: string
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
