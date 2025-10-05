@@ -56,16 +56,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          image_url: string | null
           name: string
         }
         Insert: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name: string
         }
         Update: {
           created_at?: string
           id?: string
+          image_url?: string | null
           name?: string
         }
         Relationships: []
@@ -207,6 +210,10 @@ export type Database = {
           flash_sale_end: string | null
           id: string
           image_url: string | null
+          is_featured: boolean | null
+          is_flash_sale: boolean | null
+          is_new_arrival: boolean | null
+          is_popular: boolean | null
           name: string
           price_retail: number
           price_wholesale: number | null
@@ -221,6 +228,10 @@ export type Database = {
           flash_sale_end?: string | null
           id?: string
           image_url?: string | null
+          is_featured?: boolean | null
+          is_flash_sale?: boolean | null
+          is_new_arrival?: boolean | null
+          is_popular?: boolean | null
           name: string
           price_retail: number
           price_wholesale?: number | null
@@ -235,6 +246,10 @@ export type Database = {
           flash_sale_end?: string | null
           id?: string
           image_url?: string | null
+          is_featured?: boolean | null
+          is_flash_sale?: boolean | null
+          is_new_arrival?: boolean | null
+          is_popular?: boolean | null
           name?: string
           price_retail?: number
           price_wholesale?: number | null

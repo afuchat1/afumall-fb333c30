@@ -9,6 +9,10 @@ export interface Product {
   flash_sale_end: string | null;
   stock: number;
   image_url: string | null;
+  is_flash_sale: boolean;
+  is_popular: boolean;
+  is_featured: boolean;
+  is_new_arrival: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -16,6 +20,7 @@ export interface Product {
 export interface Category {
   id: string;
   name: string;
+  image_url: string | null;
   created_at: string;
 }
 

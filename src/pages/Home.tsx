@@ -33,31 +33,40 @@ export const Home = () => {
           .order('created_at', { ascending: false })
           .limit(20);
 
-        // Fetch featured products (products with discounts)
+        // Fetch featured products (products marked as flash sale)
         const { data: featuredData } = await supabase
           .from('products')
           .select('*')
-          .not('discount_price', 'is', null)
+          .eq('is_flash_sale', true)
           .order('created_at', { ascending: false })
           .limit(12);
 
-        // Fetch popular products (high stock items)
+        // Fetch popular products
         const { data: popularData } = await supabase
           .from('products')
           .select('*')
-          .gte('stock', 10)
-          .order('stock', { ascending: false })
+          .eq('is_popular', true)
+          .order('created_at', { ascending: false })
           .limit(12);
 
         // Fetch new arrivals
         const { data: newArrivalsData } = await supabase
           .from('products')
           .select('*')
+          .eq('is_new_arrival', true)
+          .order('created_at', { ascending: false })
+          .limit(12);
+
+        // Fetch recommended (featured products)
+        const { data: recommendedData } = await supabase
+          .from('products')
+          .select('*')
+          .eq('is_featured', true)
           .order('created_at', { ascending: false })
           .limit(12);
 
         if (categoriesData) setCategories(categoriesData);
-        if (productsData) setProducts(productsData);
+        if (productsData) setProducts(recommendedData || productsData || []);
         if (featuredData) setFeaturedProducts(featuredData);
         if (popularData) setPopularProducts(popularData);
         if (newArrivalsData) setNewArrivals(newArrivalsData);
@@ -136,8 +145,12 @@ export const Home = () => {
                   }}
                 >
                   <CardContent className="p-3 md:p-5 text-center">
-                    <div className="w-10 h-10 md:w-14 md:h-14 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-accent/20 transition-colors">
-                      <span className="text-lg md:text-2xl">📱</span>
+                    <div className="w-10 h-10 md:w-14 md:h-14 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-2 md:mb-3 group-hover:bg-accent/20 transition-colors overflow-hidden">
+                      {category.image_url ? (
+                        <img src={category.image_url} alt={category.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-lg md:text-2xl">📱</span>
+                      )}
                     </div>
                     <h3 className="font-medium text-xs md:text-sm truncate px-1">{category.name}</h3>
                   </CardContent>

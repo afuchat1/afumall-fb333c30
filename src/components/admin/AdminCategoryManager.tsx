@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2 } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,7 +33,11 @@ export const AdminCategoryManager = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [categoryName, setCategoryName] = useState('');
+  const [categoryImageUrl, setCategoryImageUrl] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     fetchCategories();
@@ -72,6 +76,50 @@ export const AdminCategoryManager = () => {
     }
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile) return categoryImageUrl || null;
+
+    setUploading(true);
+    try {
+      const fileExt = imageFile.name.split('.').pop();
+      const fileName = `category-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('Products')
+        .upload(filePath, imageFile);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('Products')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error: any) {
+      toast({
+        title: 'Error uploading image',
+        description: error.message,
+        variant: 'destructive',
+      });
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSave = async () => {
     if (!categoryName.trim()) {
       toast({
@@ -83,10 +131,15 @@ export const AdminCategoryManager = () => {
 
     setSaving(true);
     try {
+      const uploadedImageUrl = await uploadImage();
+
       if (editingCategory) {
         const { error } = await supabase
           .from('categories')
-          .update({ name: categoryName.trim() })
+          .update({ 
+            name: categoryName.trim(),
+            image_url: uploadedImageUrl 
+          })
           .eq('id', editingCategory.id);
 
         if (error) throw error;
@@ -94,15 +147,16 @@ export const AdminCategoryManager = () => {
       } else {
         const { error } = await supabase
           .from('categories')
-          .insert([{ name: categoryName.trim() }]);
+          .insert([{ 
+            name: categoryName.trim(),
+            image_url: uploadedImageUrl 
+          }]);
 
         if (error) throw error;
         toast({ title: 'Category created successfully' });
       }
 
-      setShowDialog(false);
-      setCategoryName('');
-      setEditingCategory(null);
+      handleDialogClose();
       fetchCategories();
     } catch (error: any) {
       toast({
@@ -118,6 +172,8 @@ export const AdminCategoryManager = () => {
   const handleEdit = (category: Category) => {
     setEditingCategory(category);
     setCategoryName(category.name);
+    setCategoryImageUrl(category.image_url || '');
+    setImagePreview(category.image_url || '');
     setShowDialog(true);
   };
 
@@ -144,6 +200,9 @@ export const AdminCategoryManager = () => {
   const handleDialogClose = () => {
     setShowDialog(false);
     setCategoryName('');
+    setCategoryImageUrl('');
+    setImageFile(null);
+    setImagePreview('');
     setEditingCategory(null);
   };
 
@@ -159,7 +218,7 @@ export const AdminCategoryManager = () => {
                 Add Category
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-md">
               <DialogHeader>
                 <DialogTitle>
                   {editingCategory ? 'Edit Category' : 'Add New Category'}
@@ -175,12 +234,69 @@ export const AdminCategoryManager = () => {
                     placeholder="Enter category name"
                   />
                 </div>
-                <div className="flex justify-end space-x-2">
+
+                <div className="space-y-2">
+                  <Label>Category Image</Label>
+                  <div className="border-2 border-dashed rounded-lg p-4 text-center hover:border-accent transition-colors bg-muted/30">
+                    {imagePreview ? (
+                      <div className="relative inline-block">
+                        <img
+                          src={imagePreview}
+                          alt="Category preview"
+                          className="max-h-32 rounded-lg mx-auto"
+                        />
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="destructive"
+                          className="absolute top-1 right-1 h-6 w-6 rounded-full"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview('');
+                            setCategoryImageUrl('');
+                          }}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="space-y-2">
+                        <Upload className="h-8 w-8 mx-auto text-muted-foreground" />
+                        <div>
+                          <Label htmlFor="category-image-upload" className="cursor-pointer text-accent hover:text-accent/80 text-sm">
+                            Click to upload
+                          </Label>
+                          <p className="text-xs text-muted-foreground mt-1">PNG, JPG, WEBP</p>
+                        </div>
+                      </div>
+                    )}
+                    <Input
+                      id="category-image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                  </div>
+                  <div className="text-xs text-muted-foreground text-center">Or paste URL:</div>
+                  <Input
+                    type="url"
+                    value={categoryImageUrl}
+                    onChange={(e) => {
+                      setCategoryImageUrl(e.target.value);
+                      setImagePreview(e.target.value);
+                      setImageFile(null);
+                    }}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                <div className="flex justify-end space-x-2 pt-4">
                   <Button variant="outline" onClick={handleDialogClose}>
                     Cancel
                   </Button>
-                  <Button onClick={handleSave} disabled={saving}>
-                    {saving ? 'Saving...' : (editingCategory ? 'Update' : 'Create')}
+                  <Button onClick={handleSave} disabled={saving || uploading}>
+                    {saving || uploading ? 'Saving...' : (editingCategory ? 'Update' : 'Create')}
                   </Button>
                 </div>
               </div>
@@ -203,6 +319,7 @@ export const AdminCategoryManager = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>Image</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Actions</TableHead>
@@ -211,6 +328,15 @@ export const AdminCategoryManager = () => {
             <TableBody>
               {categories.map((category) => (
                 <TableRow key={category.id}>
+                  <TableCell>
+                    {category.image_url ? (
+                      <img src={category.image_url} alt={category.name} className="h-10 w-10 object-cover rounded-lg" />
+                    ) : (
+                      <div className="h-10 w-10 bg-muted rounded-lg flex items-center justify-center text-lg">
+                        📱
+                      </div>
+                    )}
+                  </TableCell>
                   <TableCell className="font-medium">{category.name}</TableCell>
                   <TableCell>
                     {new Date(category.created_at).toLocaleDateString()}

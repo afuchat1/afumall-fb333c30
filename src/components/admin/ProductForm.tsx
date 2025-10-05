@@ -10,9 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon, Upload, X, Zap, Tag } from 'lucide-react';
+import { CalendarIcon, Upload, X, Zap, Tag, TrendingUp, Star, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface ProductFormProps {
   product?: Product | null;
@@ -31,6 +32,10 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
     stock: '',
     image_url: '',
     flash_sale_end: null as Date | null,
+    is_flash_sale: false,
+    is_popular: false,
+    is_featured: false,
+    is_new_arrival: false,
   });
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
@@ -51,6 +56,10 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         stock: product.stock.toString(),
         image_url: product.image_url || '',
         flash_sale_end: product.flash_sale_end ? new Date(product.flash_sale_end) : null,
+        is_flash_sale: product.is_flash_sale || false,
+        is_popular: product.is_popular || false,
+        is_featured: product.is_featured || false,
+        is_new_arrival: product.is_new_arrival || false,
       });
       setImagePreview(product.image_url || '');
     }
@@ -127,6 +136,10 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
         stock: parseInt(formData.stock),
         image_url: uploadedImageUrl,
         flash_sale_end: formData.flash_sale_end?.toISOString() || null,
+        is_flash_sale: formData.is_flash_sale,
+        is_popular: formData.is_popular,
+        is_featured: formData.is_featured,
+        is_new_arrival: formData.is_new_arrival,
       };
 
       if (product) {
@@ -332,6 +345,80 @@ export const ProductForm = ({ product, onSave, onCancel }: ProductFormProps) => 
                     Clear flash sale
                   </Button>
                 )}
+              </div>
+            </div>
+          </div>
+
+          {/* Product Type Selection */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Product Categories</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-xl bg-muted/30">
+              <div className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/5 transition-colors">
+                <Checkbox
+                  id="is_flash_sale"
+                  checked={formData.is_flash_sale}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, is_flash_sale: checked as boolean }))
+                  }
+                />
+                <Label htmlFor="is_flash_sale" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Zap className="h-4 w-4 text-accent" />
+                  <div>
+                    <div className="font-medium">Flash Sale</div>
+                    <div className="text-xs text-muted-foreground">Show in flash sale section</div>
+                  </div>
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/5 transition-colors">
+                <Checkbox
+                  id="is_popular"
+                  checked={formData.is_popular}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, is_popular: checked as boolean }))
+                  }
+                />
+                <Label htmlFor="is_popular" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <div>
+                    <div className="font-medium">Popular</div>
+                    <div className="text-xs text-muted-foreground">Show in popular section</div>
+                  </div>
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/5 transition-colors">
+                <Checkbox
+                  id="is_featured"
+                  checked={formData.is_featured}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, is_featured: checked as boolean }))
+                  }
+                />
+                <Label htmlFor="is_featured" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Star className="h-4 w-4 text-secondary-foreground" />
+                  <div>
+                    <div className="font-medium">Featured</div>
+                    <div className="text-xs text-muted-foreground">Show in featured section</div>
+                  </div>
+                </Label>
+              </div>
+
+              <div className="flex items-center space-x-3 p-3 border rounded-lg bg-background hover:bg-accent/5 transition-colors">
+                <Checkbox
+                  id="is_new_arrival"
+                  checked={formData.is_new_arrival}
+                  onCheckedChange={(checked) => 
+                    setFormData(prev => ({ ...prev, is_new_arrival: checked as boolean }))
+                  }
+                />
+                <Label htmlFor="is_new_arrival" className="flex items-center gap-2 cursor-pointer flex-1">
+                  <Clock className="h-4 w-4" />
+                  <div>
+                    <div className="font-medium">New Arrival</div>
+                    <div className="text-xs text-muted-foreground">Show in new arrivals</div>
+                  </div>
+                </Label>
               </div>
             </div>
           </div>
