@@ -258,6 +258,12 @@ export const Header = () => {
                         >
                           My Seller Request
                         </Link>
+                        <Link
+                          to="/seller/dashboard"
+                          className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                        >
+                          Seller Dashboard
+                        </Link>
                         {isAdmin && (
                           <Link
                             to="/admin"

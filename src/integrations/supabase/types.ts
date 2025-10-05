@@ -321,6 +321,7 @@ export type Database = {
       }
       products: {
         Row: {
+          approval_notes: string | null
           category_id: string | null
           created_at: string
           description: string | null
@@ -328,6 +329,7 @@ export type Database = {
           flash_sale_end: string | null
           id: string
           image_url: string | null
+          is_approved: boolean
           is_featured: boolean | null
           is_flash_sale: boolean | null
           is_new_arrival: boolean | null
@@ -335,10 +337,12 @@ export type Database = {
           name: string
           price_retail: number
           price_wholesale: number | null
+          seller_id: string | null
           stock: number
           updated_at: string
         }
         Insert: {
+          approval_notes?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -346,6 +350,7 @@ export type Database = {
           flash_sale_end?: string | null
           id?: string
           image_url?: string | null
+          is_approved?: boolean
           is_featured?: boolean | null
           is_flash_sale?: boolean | null
           is_new_arrival?: boolean | null
@@ -353,10 +358,12 @@ export type Database = {
           name: string
           price_retail: number
           price_wholesale?: number | null
+          seller_id?: string | null
           stock?: number
           updated_at?: string
         }
         Update: {
+          approval_notes?: string | null
           category_id?: string | null
           created_at?: string
           description?: string | null
@@ -364,6 +371,7 @@ export type Database = {
           flash_sale_end?: string | null
           id?: string
           image_url?: string | null
+          is_approved?: boolean
           is_featured?: boolean | null
           is_flash_sale?: boolean | null
           is_new_arrival?: boolean | null
@@ -371,6 +379,7 @@ export type Database = {
           name?: string
           price_retail?: number
           price_wholesale?: number | null
+          seller_id?: string | null
           stock?: number
           updated_at?: string
         }

@@ -18,6 +18,8 @@ import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 import SellerRequest from "./pages/SellerRequest";
 import { MySellerRequest } from "./pages/MySellerRequest";
+import { SellerDashboard } from "./pages/SellerDashboard";
+import { SellerAddProduct } from "./pages/SellerAddProduct";
 import ProductInquiry from "./pages/ProductInquiry";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -50,6 +52,8 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/seller-request" element={<SellerRequest />} />
             <Route path="/my-seller-request" element={<MySellerRequest />} />
+            <Route path="/seller/dashboard" element={<SellerDashboard />} />
+            <Route path="/seller/add-product" element={<SellerAddProduct />} />
             <Route path="/product-inquiry/:id" element={<ProductInquiry />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
