@@ -158,6 +158,27 @@ export const Header = () => {
                       Deals
                     </Link>
                     
+                    <div className="border-t my-4"></div>
+                    
+                    <Link
+                      to="/about"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      About
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      Contact
+                    </Link>
+                    <Link
+                      to="/seller-request"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      Become a Seller
+                    </Link>
+                    
                     {user ? (
                       <>
                         <div className="border-t my-4"></div>

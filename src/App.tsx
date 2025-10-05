@@ -15,6 +15,7 @@ import { Deals } from "./pages/Deals";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 import SellerRequest from "./pages/SellerRequest";
+import ProductInquiry from "./pages/ProductInquiry";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import ReturnPolicy from "./pages/ReturnPolicy";
@@ -43,6 +44,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/seller-request" element={<SellerRequest />} />
+            <Route path="/product-inquiry/:id" element={<ProductInquiry />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/return-policy" element={<ReturnPolicy />} />

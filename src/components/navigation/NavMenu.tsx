@@ -28,6 +28,15 @@ export const NavMenu = ({ className, mobile = false }: NavMenuProps) => {
     },
   ];
 
+  const footerNavItems = [
+    { label: 'About', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+    { label: 'Terms', href: '/terms' },
+    { label: 'Privacy', href: '/privacy' },
+    { label: 'Return Policy', href: '/return-policy' },
+    { label: 'Become a Seller', href: '/seller-request' },
+  ];
+
   return (
     <nav className={cn('flex', mobile ? 'flex-col space-y-2' : 'space-x-6', className)}>
       {navItems.map((item) => {
