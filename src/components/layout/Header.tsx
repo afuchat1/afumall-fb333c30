@@ -201,6 +201,18 @@ export const Header = () => {
                     >
                       Deals
                     </Link>
+                    <Link
+                      to="/flash-sales"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      Flash Sales
+                    </Link>
+                    <Link
+                      to="/new-arrivals"
+                      className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                    >
+                      New Arrivals
+                    </Link>
                     
                     <div className="border-t my-4"></div>
                     
@@ -239,6 +251,12 @@ export const Header = () => {
                         >
                           <Package className="h-4 w-4 mr-2" />
                           My Orders
+                        </Link>
+                        <Link
+                          to="/my-seller-request"
+                          className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                        >
+                          My Seller Request
                         </Link>
                         {isAdmin && (
                           <Link

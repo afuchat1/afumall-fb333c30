@@ -122,8 +122,8 @@ export const Home = () => {
                     HOT
                   </div>
                 </div>
-                <Link to="/deals" className="text-xs md:text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
-                  More <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
+                <Link to="/flash-sales" className="text-xs md:text-sm font-medium text-red-600 dark:text-red-400 hover:underline flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                 </Link>
               </div>
               <ProductCarousel products={flashSaleProducts} loading={loading} />
@@ -158,8 +158,8 @@ export const Home = () => {
                   <Star className="h-4 w-4 md:h-5 md:w-5 text-yellow-500" />
                   <h2 className="text-base md:text-xl font-bold font-poppins">New Arrivals</h2>
                 </div>
-                <Link to="/products" className="text-xs md:text-sm font-medium text-primary hover:underline flex items-center gap-1">
-                  More <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
+                <Link to="/new-arrivals" className="text-xs md:text-sm font-medium text-primary hover:underline flex items-center gap-1">
+                  View All <ChevronRight className="h-3 w-3 md:h-4 md:w-4" />
                 </Link>
               </div>
               <ProductCarousel products={newArrivals} loading={loading} />

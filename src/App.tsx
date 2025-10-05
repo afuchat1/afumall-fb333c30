@@ -12,9 +12,12 @@ import { Products } from "./pages/Products";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Category } from "./pages/Category";
 import { Deals } from "./pages/Deals";
+import { FlashSales } from "./pages/FlashSales";
+import { NewArrivals } from "./pages/NewArrivals";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 import SellerRequest from "./pages/SellerRequest";
+import { MySellerRequest } from "./pages/MySellerRequest";
 import ProductInquiry from "./pages/ProductInquiry";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -41,9 +44,12 @@ const App = () => (
             <Route path="/product/:id" element={<ProductDetail />} />
             <Route path="/category/:id" element={<Category />} />
             <Route path="/deals" element={<Deals />} />
+            <Route path="/flash-sales" element={<FlashSales />} />
+            <Route path="/new-arrivals" element={<NewArrivals />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/seller-request" element={<SellerRequest />} />
+            <Route path="/my-seller-request" element={<MySellerRequest />} />
             <Route path="/product-inquiry/:id" element={<ProductInquiry />} />
             <Route path="/terms" element={<Terms />} />
             <Route path="/privacy" element={<Privacy />} />
