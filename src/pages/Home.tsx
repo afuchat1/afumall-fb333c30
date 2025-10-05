@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types';
 import { ProductCarousel } from '@/components/products/ProductCarousel';
+import { AISearch } from '@/components/products/AISearch';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Layout } from '@/components/layout/Layout';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Clock, TrendingUp, Star, Zap } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, Clock, TrendingUp, Star, Zap, Sparkles } from 'lucide-react';
 
 export const Home = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -16,6 +17,7 @@ export const Home = () => {
   const [popularProducts, setPopularProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,9 +81,30 @@ export const Home = () => {
     };
   }, []);
 
+  const handleSearchResults = (searchResults: Product[]) => {
+    sessionStorage.setItem('aiSearchResults', JSON.stringify(searchResults));
+    navigate('/products');
+  };
+
   return (
     <Layout>
       <div className="space-y-6 md:space-y-8">
+        {/* AI Search Section */}
+        <section className="bg-gradient-to-r from-primary/10 to-accent/10 py-8 md:py-12">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto text-center mb-6">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+                <h2 className="text-2xl md:text-3xl font-bold">AI-Powered Search</h2>
+              </div>
+              <p className="text-muted-foreground mb-6">
+                Find exactly what you need with intelligent search
+              </p>
+              <AISearch onResults={handleSearchResults} onLoading={setLoading} />
+            </div>
+          </div>
+        </section>
+
         {/* Flash Sale Section */}
         {!loading && featuredProducts.length > 0 && (
           <section className="bg-gradient-to-r from-sale/10 to-accent/10 py-4 md:py-6 animate-fade-in">

@@ -2,22 +2,30 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types';
 import { ProductGrid } from '@/components/products/ProductGrid';
+import { AISearch } from '@/components/products/AISearch';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Layout } from '@/components/layout/Layout';
 import { useSearchParams } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 export const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [aiSearchActive, setAiSearchActive] = useState(false);
+  const [aiRanking, setAiRanking] = useState(false);
+  const { toast } = useToast();
   
   const selectedCategory = searchParams.get('category');
   const searchQuery = searchParams.get('search');
 
   useEffect(() => {
     const fetchData = async () => {
+      if (aiSearchActive) return;
+      
       setLoading(true);
       try {
         // Fetch categories
@@ -73,9 +81,10 @@ export const Products = () => {
       supabase.removeChannel(productsChannel);
       supabase.removeChannel(categoriesChannel);
     };
-  }, [selectedCategory, searchQuery]);
+  }, [selectedCategory, searchQuery, aiSearchActive]);
 
   const handleCategoryChange = (categoryId: string) => {
+    setAiSearchActive(false);
     const params = new URLSearchParams(searchParams);
     if (categoryId === 'all') {
       params.delete('category');
@@ -83,6 +92,55 @@ export const Products = () => {
       params.set('category', categoryId);
     }
     setSearchParams(params);
+  };
+
+  const handleAIRanking = async () => {
+    if (products.length === 0) return;
+    
+    setAiRanking(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('ai-rank-products', {
+        body: { 
+          products,
+          context: 'product listing page - intelligently rank by popularity, recency, pricing, and relevance'
+        },
+      });
+
+      if (error) throw error;
+
+      if (data?.error) {
+        toast({
+          title: "AI ranking failed",
+          description: data.error,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setProducts(data.products || products);
+      toast({
+        title: "AI Ranking Applied",
+        description: "Products intelligently rearranged",
+      });
+    } catch (error) {
+      console.error('AI ranking error:', error);
+      toast({
+        title: "Ranking failed",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    } finally {
+      setAiRanking(false);
+    }
+  };
+
+  const handleSearchResults = (searchResults: Product[]) => {
+    setProducts(searchResults);
+    setAiSearchActive(true);
+  };
+
+  const handleResetSearch = () => {
+    setAiSearchActive(false);
   };
 
   return (
@@ -106,6 +164,28 @@ export const Products = () => {
               </SelectContent>
             </Select>
           </div>
+        </div>
+
+        <AISearch 
+          onResults={handleSearchResults} 
+          onLoading={setLoading}
+        />
+
+        <div className="flex flex-wrap gap-2 mb-6">
+          {aiSearchActive && (
+            <Button onClick={handleResetSearch} variant="outline">
+              Show All Products
+            </Button>
+          )}
+          <Button 
+            onClick={handleAIRanking} 
+            disabled={aiRanking || loading}
+            variant="secondary"
+            className="gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            {aiRanking ? 'Ranking...' : 'AI Smart Sort'}
+          </Button>
         </div>
 
         {searchQuery && (

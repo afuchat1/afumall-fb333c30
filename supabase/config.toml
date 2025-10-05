@@ -1,1 +1,7 @@
 project_id = "lgvejltglycwihyjbxiu"
+
+[functions.ai-search]
+verify_jwt = false
+
+[functions.ai-rank-products]
+verify_jwt = false
