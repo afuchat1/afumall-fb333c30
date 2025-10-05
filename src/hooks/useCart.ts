@@ -18,7 +18,9 @@ export const useCart = () => {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
-  const sessionId = getSessionId();
+  
+  // Use useMemo to prevent sessionId from changing on every render
+  const sessionId = useState(() => getSessionId())[0];
 
   // Fetch cart items from Supabase
   const fetchCartItems = async () => {
@@ -49,7 +51,7 @@ export const useCart = () => {
 
     // Subscribe to real-time changes
     const channel = supabase
-      .channel('cart-changes')
+      .channel(`cart-${user?.id || sessionId}`)
       .on(
         'postgres_changes',
         {
@@ -67,7 +69,7 @@ export const useCart = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user, sessionId]);
+  }, [user?.id, sessionId]);
 
   const addToCart = async (product: Product, quantity: number = 1) => {
     try {
