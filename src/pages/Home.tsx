@@ -20,56 +20,35 @@ export const Home = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // Fetch all products first
+        const { data: allProducts } = await supabase
+          .from('products')
+          .select('*')
+          .order('created_at', { ascending: false });
+
         // Fetch categories
         const { data: categoriesData } = await supabase
           .from('categories')
           .select('*')
           .order('name');
 
-        // Fetch products
-        const { data: productsData } = await supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(20);
+        if (allProducts && allProducts.length > 0) {
+          // Filter products by flags, with fallback to all products
+          const flashSaleProducts = allProducts.filter(p => p.is_flash_sale) || [];
+          const popularProds = allProducts.filter(p => p.is_popular) || [];
+          const newArrivalProds = allProducts.filter(p => p.is_new_arrival) || [];
+          const featuredProds = allProducts.filter(p => p.is_featured) || [];
 
-        // Fetch featured products (products marked as flash sale)
-        const { data: featuredData } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_flash_sale', true)
-          .order('created_at', { ascending: false })
-          .limit(12);
+          // Fallback: if no products with specific flags, show recent products
+          const recentProducts = allProducts.slice(0, 12);
 
-        // Fetch popular products
-        const { data: popularData } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_popular', true)
-          .order('created_at', { ascending: false })
-          .limit(12);
-
-        // Fetch new arrivals
-        const { data: newArrivalsData } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_new_arrival', true)
-          .order('created_at', { ascending: false })
-          .limit(12);
-
-        // Fetch recommended (featured products)
-        const { data: recommendedData } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_featured', true)
-          .order('created_at', { ascending: false })
-          .limit(12);
+          setFeaturedProducts(flashSaleProducts.length > 0 ? flashSaleProducts.slice(0, 12) : recentProducts);
+          setPopularProducts(popularProds.length > 0 ? popularProds.slice(0, 12) : recentProducts);
+          setNewArrivals(newArrivalProds.length > 0 ? newArrivalProds.slice(0, 12) : recentProducts);
+          setProducts(featuredProds.length > 0 ? featuredProds.slice(0, 12) : recentProducts);
+        }
 
         if (categoriesData) setCategories(categoriesData);
-        if (productsData) setProducts(recommendedData || productsData || []);
-        if (featuredData) setFeaturedProducts(featuredData);
-        if (popularData) setPopularProducts(popularData);
-        if (newArrivalsData) setNewArrivals(newArrivalsData);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -104,7 +83,7 @@ export const Home = () => {
     <Layout>
       <div className="space-y-6 md:space-y-8">
         {/* Flash Sale Section */}
-        {featuredProducts.length > 0 && (
+        {!loading && featuredProducts.length > 0 && (
           <section className="bg-gradient-to-r from-sale/10 to-accent/10 py-4 md:py-6 animate-fade-in">
             <div className="container mx-auto px-2 md:px-4">
               <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -161,7 +140,7 @@ export const Home = () => {
         </section>
 
         {/* Popular Products */}
-        {popularProducts.length > 0 && (
+        {!loading && popularProducts.length > 0 && (
           <section className="container mx-auto px-2 md:px-4 animate-fade-in">
             <div className="flex items-center justify-between mb-4 md:mb-6">
               <div className="flex items-center space-x-2 md:space-x-3">
@@ -185,7 +164,7 @@ export const Home = () => {
         )}
 
         {/* New Arrivals */}
-        {newArrivals.length > 0 && (
+        {!loading && newArrivals.length > 0 && (
           <section className="bg-card py-4 md:py-6 animate-fade-in">
             <div className="container mx-auto px-2 md:px-4">
               <div className="flex items-center justify-between mb-4 md:mb-6">
@@ -211,7 +190,7 @@ export const Home = () => {
         )}
 
         {/* Recommended for You */}
-        {products.length > 0 && (
+        {!loading && products.length > 0 && (
           <section className="container mx-auto px-2 md:px-4 pb-4 md:pb-6 animate-fade-in">
             <div className="flex items-center justify-between mb-4 md:mb-6">
               <div className="flex items-center space-x-2 md:space-x-3">
