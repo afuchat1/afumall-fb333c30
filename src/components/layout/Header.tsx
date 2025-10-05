@@ -33,8 +33,9 @@ export const Header = () => {
       <div className="container mx-auto px-2 md:px-4">
         <div className="flex items-center justify-between h-12 md:h-14">
           {/* Logo */}
-          <Link to="/" className="text-lg md:text-xl font-bold text-header-foreground hover:text-accent transition-colors">
-            AfuMall
+          <Link to="/" className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
+            <img src="/logo.jpg" alt="AfuMall Logo" className="h-8 w-8 md:h-10 md:w-10 rounded-full object-cover" loading="eager" />
+            <span className="text-lg md:text-xl font-bold text-header-foreground">AfuMall</span>
           </Link>
 
           {/* Search Bar - Desktop */}
