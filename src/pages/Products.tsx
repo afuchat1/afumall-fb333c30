@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Product, Category } from '@/types';
 import { ProductGrid } from '@/components/products/ProductGrid';
@@ -9,9 +9,27 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Sparkles, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProductFilters, FilterOptions } from '@/components/products/ProductFilters';
+import { Helmet } from 'react-helmet-async';
+
+// Strongly typed Product interface (merge with your existing if needed)
+export interface TypedProduct extends Product {
+  id: string;
+  name: string;
+  description: string;
+  price_retail: number;
+  discount_price?: number;
+  image_url?: string;
+  stock: number;
+  category_id: string;
+  is_new_arrival: boolean;
+  is_featured: boolean;
+  is_popular: boolean;
+  is_flash_sale: boolean;
+  created_at: string;
+}
 
 export const Products = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<TypedProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,22 +45,22 @@ export const Products = () => {
     isPopular: false,
     isFlashSale: false,
   });
-  
+
   const selectedCategory = searchParams.get('category');
   const searchQuery = searchParams.get('search');
 
   useEffect(() => {
     const fetchData = async () => {
       if (aiSearchActive) return;
-      
+
       setLoading(true);
       try {
         // Check for AI search results from sessionStorage
         const aiResults = sessionStorage.getItem('aiSearchResults');
         const aiQuery = sessionStorage.getItem('aiSearchQuery');
-        
+
         if (aiResults && aiQuery) {
-          const parsedProducts = JSON.parse(aiResults);
+          const parsedProducts = JSON.parse(aiResults) as TypedProduct[];
           setProducts(parsedProducts);
           setAiSearchActive(true);
           sessionStorage.removeItem('aiSearchResults');
@@ -52,43 +70,36 @@ export const Products = () => {
         }
 
         // Fetch categories
-        const { data: categoriesData } = await supabase
-          .from('categories')
+        const { data: categoriesData, error: catError } = await supabase
+          .from<Category>('categories')
           .select('*')
           .order('name');
 
+        if (catError) throw catError;
+        if (categoriesData) setCategories(categoriesData);
+
         // Build products query
-        let query = supabase
-          .from('products')
-          .select('*')
-          .order('created_at', { ascending: false });
+        let query = supabase.from<TypedProduct>('products').select('*').order('created_at', { ascending: false });
 
         // Apply filters
-        if (selectedCategory) {
-          query = query.eq('category_id', selectedCategory);
-        }
+        if (selectedCategory) query = query.eq('category_id', selectedCategory);
+        if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
 
-        if (searchQuery) {
-          query = query.ilike('name', `%${searchQuery}%`);
-        }
+        const { data: productsData, error: prodError } = await query;
+        if (prodError) throw prodError;
 
-        const { data: productsData } = await query;
-
-        if (categoriesData) setCategories(categoriesData);
         if (productsData) {
           // Calculate max price for filters
           const prices = productsData.map(p => Number(p.price_retail));
           const calculatedMaxPrice = Math.ceil(Math.max(...prices, 100));
           setMaxPrice(calculatedMaxPrice);
-          setFilters(prev => ({
-            ...prev,
-            priceRange: [0, calculatedMaxPrice]
-          }));
-          
+          setFilters(prev => ({ ...prev, priceRange: [0, calculatedMaxPrice] }));
+
           setProducts(productsData);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching data:', error);
+        toast.error('Failed to fetch products. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -120,28 +131,24 @@ export const Products = () => {
   const handleCategoryChange = (categoryId: string) => {
     setAiSearchActive(false);
     const params = new URLSearchParams(searchParams);
-    if (categoryId === 'all') {
-      params.delete('category');
-    } else {
-      params.set('category', categoryId);
-    }
+    if (categoryId === 'all') params.delete('category');
+    else params.set('category', categoryId);
     setSearchParams(params);
   };
 
   const handleAIRanking = async () => {
     if (products.length === 0) return;
-    
+
     setAiRanking(true);
     try {
       const { data, error } = await supabase.functions.invoke('ai-rank-products', {
-        body: { 
+        body: {
           products,
-          context: 'product listing page - intelligently rank by popularity, recency, pricing, and relevance'
+          context: 'product listing page - intelligently rank by popularity, recency, pricing, and relevance',
         },
       });
 
       if (error) throw error;
-
       if (data?.error) {
         toast.error('AI ranking failed: ' + data.error);
         return;
@@ -171,18 +178,9 @@ export const Products = () => {
   // Apply filters to products
   const filteredProducts = products.filter(product => {
     const price = Number(product.discount_price || product.price_retail);
-    
-    // Price range filter
-    if (price < filters.priceRange[0] || price > filters.priceRange[1]) {
-      return false;
-    }
 
-    // Stock filter
-    if (filters.inStock && product.stock <= 0) {
-      return false;
-    }
-
-    // Tag filters
+    if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
+    if (filters.inStock && product.stock <= 0) return false;
     if (filters.isNewArrival && !product.is_new_arrival) return false;
     if (filters.isFeatured && !product.is_featured) return false;
     if (filters.isPopular && !product.is_popular) return false;
@@ -193,23 +191,27 @@ export const Products = () => {
 
   return (
     <Layout>
+      <Helmet>
+        <title>All Products - AfuMall</title>
+        <meta name="description" content="Browse all products on AfuMall marketplace." />
+        <meta property="og:title" content="All Products - AfuMall" />
+        <meta property="og:description" content="Browse all products on AfuMall marketplace." />
+        <meta property="og:image" content="/default-og-image.png" />
+      </Helmet>
+
       <div className="container mx-auto px-2 md:px-4 py-3 md:py-6 font-sans">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 md:mb-6 gap-3 md:gap-0">
           <h1 className="text-xl md:text-3xl font-bold font-heading">All Products</h1>
-          
+
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <ProductFilters 
-              filters={filters}
-              onFiltersChange={handleFiltersChange}
-              maxPrice={maxPrice}
-            />
+            <ProductFilters filters={filters} onFiltersChange={handleFiltersChange} maxPrice={maxPrice} />
             <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
               <SelectTrigger className="flex-1 md:w-48 h-9 text-sm">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((category) => (
+                {categories.map(category => (
                   <SelectItem key={category.id} value={category.id}>
                     {category.name}
                   </SelectItem>
@@ -226,13 +228,7 @@ export const Products = () => {
               Clear AI Search
             </Button>
           )}
-          <Button 
-            onClick={handleAIRanking} 
-            disabled={aiRanking || loading}
-            variant="secondary"
-            size="sm"
-            className="gap-1"
-          >
+          <Button onClick={handleAIRanking} disabled={aiRanking || loading} variant="secondary" size="sm" className="gap-1">
             <Sparkles className="h-3 w-3" />
             {aiRanking ? 'Ranking...' : 'AI Smart Sort'}
           </Button>
