@@ -53,6 +53,7 @@ export const Products = () => {
     const fetchData = async () => {
       if (aiSearchActive) return;
       setLoading(true);
+
       try {
         // Check for AI search results
         const aiResults = sessionStorage.getItem('aiSearchResults');
@@ -167,7 +168,7 @@ export const Products = () => {
     return true;
   });
 
-  // JSON-LD for all products on listing page
+  // JSON-LD for SEO
   const jsonLdProducts = filteredProducts.map(p => ({
     "@type": "Product",
     name: p.name,
@@ -192,7 +193,17 @@ export const Products = () => {
         <meta property="og:description" content="Browse all products on AfuMall marketplace." />
         <meta property="og:image" content="/default-og-image.png" />
         <meta name="twitter:card" content="summary_large_image" />
-        <script type="application/ld+json">{JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", itemListElement: jsonLdProducts.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: p })) })}</script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: jsonLdProducts.map((p, i) => ({
+              "@type": "ListItem",
+              position: i + 1,
+              item: p,
+            })),
+          })}
+        </script>
       </Helmet>
 
       <div className="container mx-auto px-2 md:px-4 py-3 md:py-6 font-sans">
