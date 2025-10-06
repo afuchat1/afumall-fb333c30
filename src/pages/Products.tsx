@@ -84,7 +84,7 @@ export const Products = () => {
         if (prodError) throw prodError;
 
         if (productsData) {
-          const prices = productsData.map(p => Number(p.price_retail));
+          const prices = productsData.map(p => Number(p.price_retail || 0));
           const calculatedMaxPrice = Math.ceil(Math.max(...prices, 100));
           setMaxPrice(calculatedMaxPrice);
           setFilters(prev => ({ ...prev, priceRange: [0, calculatedMaxPrice] }));
@@ -128,20 +128,18 @@ export const Products = () => {
   const handleAIRanking = async () => {
     if (!products.length) return;
     setAiRanking(true);
+
     try {
       const { data, error } = await supabase.functions.invoke('ai-rank-products', {
-        body: {
-          products,
-          context: 'product listing page - intelligently rank by popularity, recency, pricing, and relevance',
-        },
+        body: { products, context: 'product listing page - rank by popularity, recency, pricing, relevance' },
       });
       if (error) throw error;
       if (data?.error) return toast.error('AI ranking failed: ' + data.error);
       setProducts(data.products || products);
-      toast.success('AI Ranking Applied - Products intelligently rearranged');
+      toast.success('AI Ranking Applied - Products rearranged');
     } catch (error) {
       console.error('AI ranking error:', error);
-      toast.error('Ranking failed. Please try again');
+      toast.error('Ranking failed. Please try again.');
     } finally {
       setAiRanking(false);
     }
@@ -156,11 +154,11 @@ export const Products = () => {
 
   const handleFiltersChange = (newFilters: FilterOptions) => setFilters(newFilters);
 
-  // Filter products
-  const filteredProducts = products.filter(product => {
-    const price = Number(product.discount_price || product.price_retail);
+  // Filter products safely
+  const filteredProducts = (products || []).filter(product => {
+    const price = Number(product.discount_price ?? product.price_retail ?? 0);
     if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
-    if (filters.inStock && product.stock <= 0) return false;
+    if (filters.inStock && (product.stock ?? 0) <= 0) return false;
     if (filters.isNewArrival && !product.is_new_arrival) return false;
     if (filters.isFeatured && !product.is_featured) return false;
     if (filters.isPopular && !product.is_popular) return false;
@@ -168,19 +166,20 @@ export const Products = () => {
     return true;
   });
 
-  // JSON-LD for SEO
+  // JSON-LD safely
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const jsonLdProducts = filteredProducts.map(p => ({
     "@type": "Product",
-    name: p.name,
-    description: p.description,
+    name: p.name || 'Unnamed Product',
+    description: p.description || '',
     image: p.image_url || '/default-og-image.png',
     sku: p.id,
     offers: {
       "@type": "Offer",
-      url: `${window.location.origin}/product/${p.id}`,
+      url: `${origin}/product/${p.id}`,
       priceCurrency: "UGX",
-      price: (p.discount_price || p.price_retail).toString(),
-      availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+      price: ((p.discount_price ?? p.price_retail) || 0).toString(),
+      availability: (p.stock ?? 0) > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     },
   }));
 
@@ -197,11 +196,7 @@ export const Products = () => {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "ItemList",
-            itemListElement: jsonLdProducts.map((p, i) => ({
-              "@type": "ListItem",
-              position: i + 1,
-              item: p,
-            })),
+            itemListElement: jsonLdProducts.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: p })),
           })}
         </script>
       </Helmet>
@@ -218,8 +213,8 @@ export const Products = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {categories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+                {(categories || []).map(category => (
+                  <SelectItem key={category.id} value={category.id}>{category.name || 'Unnamed'}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -253,7 +248,7 @@ export const Products = () => {
           </div>
         )}
 
-        <ProductGrid products={filteredProducts} loading={loading} />
+        <ProductGrid products={filteredProducts ?? []} loading={loading} />
       </div>
     </Layout>
   );
