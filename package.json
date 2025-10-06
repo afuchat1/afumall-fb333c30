@@ -61,7 +61,7 @@
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.9",
     "zod": "^3.25.76",
-    "react-helmet-async": "^2.1.0"
+    "react-helmet-async": "^2.0.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
