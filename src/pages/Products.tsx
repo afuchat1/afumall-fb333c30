@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 import { ProductFilters, FilterOptions } from '@/components/products/ProductFilters';
 import { Helmet } from 'react-helmet-async';
 
-// Strongly typed Product interface
 export interface TypedProduct extends Product {
   id: string;
   name: string;
@@ -55,7 +54,6 @@ export const Products = () => {
       setLoading(true);
 
       try {
-        // Check for AI search results
         const aiResults = sessionStorage.getItem('aiSearchResults');
         const aiQuery = sessionStorage.getItem('aiSearchQuery');
         if (aiResults && aiQuery) {
@@ -68,7 +66,6 @@ export const Products = () => {
           return;
         }
 
-        // Fetch categories
         const { data: categoriesData, error: catError } = await supabase
           .from<Category>('categories')
           .select('*')
@@ -76,7 +73,6 @@ export const Products = () => {
         if (catError) throw catError;
         if (categoriesData) setCategories(categoriesData);
 
-        // Fetch products
         let query = supabase.from<TypedProduct>('products').select('*').order('created_at', { ascending: false });
         if (selectedCategory) query = query.eq('category_id', selectedCategory);
         if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
@@ -84,7 +80,7 @@ export const Products = () => {
         if (prodError) throw prodError;
 
         if (productsData) {
-          const prices = productsData.map(p => Number(p.price_retail || 0));
+          const prices = productsData.map(p => Number(p.price_retail ?? 0));
           const calculatedMaxPrice = Math.ceil(Math.max(...prices, 100));
           setMaxPrice(calculatedMaxPrice);
           setFilters(prev => ({ ...prev, priceRange: [0, calculatedMaxPrice] }));
@@ -100,7 +96,6 @@ export const Products = () => {
 
     fetchData();
 
-    // Real-time subscriptions
     const productsChannel = supabase
       .channel('products-list-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
@@ -128,7 +123,6 @@ export const Products = () => {
   const handleAIRanking = async () => {
     if (!products.length) return;
     setAiRanking(true);
-
     try {
       const { data, error } = await supabase.functions.invoke('ai-rank-products', {
         body: { products, context: 'product listing page - rank by popularity, recency, pricing, relevance' },
@@ -154,8 +148,8 @@ export const Products = () => {
 
   const handleFiltersChange = (newFilters: FilterOptions) => setFilters(newFilters);
 
-  // Filter products safely
-  const filteredProducts = (products || []).filter(product => {
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  const filteredProducts = (products ?? []).filter(product => {
     const price = Number(product.discount_price ?? product.price_retail ?? 0);
     if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
     if (filters.inStock && (product.stock ?? 0) <= 0) return false;
@@ -166,9 +160,7 @@ export const Products = () => {
     return true;
   });
 
-  // JSON-LD safely
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-  const jsonLdProducts = filteredProducts.map(p => ({
+  const jsonLdProducts = filteredProducts.map((p, i) => ({
     "@type": "Product",
     name: p.name || 'Unnamed Product',
     description: p.description || '',
@@ -213,7 +205,7 @@ export const Products = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
-                {(categories || []).map(category => (
+                {(categories ?? []).map(category => (
                   <SelectItem key={category.id} value={category.id}>{category.name || 'Unnamed'}</SelectItem>
                 ))}
               </SelectContent>
