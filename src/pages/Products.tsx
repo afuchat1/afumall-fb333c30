@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { ProductFilters, FilterOptions } from '@/components/products/ProductFilters';
 import { Helmet } from 'react-helmet-async';
 
-// Strongly typed Product interface (merge with your existing if needed)
+// Strongly typed Product interface
 export interface TypedProduct extends Product {
   id: string;
   name: string;
@@ -52,13 +52,11 @@ export const Products = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (aiSearchActive) return;
-
       setLoading(true);
       try {
-        // Check for AI search results from sessionStorage
+        // Check for AI search results
         const aiResults = sessionStorage.getItem('aiSearchResults');
         const aiQuery = sessionStorage.getItem('aiSearchQuery');
-
         if (aiResults && aiQuery) {
           const parsedProducts = JSON.parse(aiResults) as TypedProduct[];
           setProducts(parsedProducts);
@@ -74,27 +72,21 @@ export const Products = () => {
           .from<Category>('categories')
           .select('*')
           .order('name');
-
         if (catError) throw catError;
         if (categoriesData) setCategories(categoriesData);
 
-        // Build products query
+        // Fetch products
         let query = supabase.from<TypedProduct>('products').select('*').order('created_at', { ascending: false });
-
-        // Apply filters
         if (selectedCategory) query = query.eq('category_id', selectedCategory);
         if (searchQuery) query = query.ilike('name', `%${searchQuery}%`);
-
         const { data: productsData, error: prodError } = await query;
         if (prodError) throw prodError;
 
         if (productsData) {
-          // Calculate max price for filters
           const prices = productsData.map(p => Number(p.price_retail));
           const calculatedMaxPrice = Math.ceil(Math.max(...prices, 100));
           setMaxPrice(calculatedMaxPrice);
           setFilters(prev => ({ ...prev, priceRange: [0, calculatedMaxPrice] }));
-
           setProducts(productsData);
         }
       } catch (error: any) {
@@ -110,16 +102,12 @@ export const Products = () => {
     // Real-time subscriptions
     const productsChannel = supabase
       .channel('products-list-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
-        fetchData();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
       .subscribe();
 
     const categoriesChannel = supabase
       .channel('categories-list-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => {
-        fetchData();
-      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => fetchData())
       .subscribe();
 
     return () => {
@@ -137,8 +125,7 @@ export const Products = () => {
   };
 
   const handleAIRanking = async () => {
-    if (products.length === 0) return;
-
+    if (!products.length) return;
     setAiRanking(true);
     try {
       const { data, error } = await supabase.functions.invoke('ai-rank-products', {
@@ -147,13 +134,8 @@ export const Products = () => {
           context: 'product listing page - intelligently rank by popularity, recency, pricing, and relevance',
         },
       });
-
       if (error) throw error;
-      if (data?.error) {
-        toast.error('AI ranking failed: ' + data.error);
-        return;
-      }
-
+      if (data?.error) return toast.error('AI ranking failed: ' + data.error);
       setProducts(data.products || products);
       toast.success('AI Ranking Applied - Products intelligently rearranged');
     } catch (error) {
@@ -171,23 +153,35 @@ export const Products = () => {
     navigate('/products', { replace: true });
   };
 
-  const handleFiltersChange = (newFilters: FilterOptions) => {
-    setFilters(newFilters);
-  };
+  const handleFiltersChange = (newFilters: FilterOptions) => setFilters(newFilters);
 
-  // Apply filters to products
+  // Filter products
   const filteredProducts = products.filter(product => {
     const price = Number(product.discount_price || product.price_retail);
-
     if (price < filters.priceRange[0] || price > filters.priceRange[1]) return false;
     if (filters.inStock && product.stock <= 0) return false;
     if (filters.isNewArrival && !product.is_new_arrival) return false;
     if (filters.isFeatured && !product.is_featured) return false;
     if (filters.isPopular && !product.is_popular) return false;
     if (filters.isFlashSale && !product.is_flash_sale) return false;
-
     return true;
   });
+
+  // JSON-LD for all products on listing page
+  const jsonLdProducts = filteredProducts.map(p => ({
+    "@type": "Product",
+    name: p.name,
+    description: p.description,
+    image: p.image_url || '/default-og-image.png',
+    sku: p.id,
+    offers: {
+      "@type": "Offer",
+      url: `${window.location.origin}/product/${p.id}`,
+      priceCurrency: "UGX",
+      price: (p.discount_price || p.price_retail).toString(),
+      availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+    },
+  }));
 
   return (
     <Layout>
@@ -197,6 +191,8 @@ export const Products = () => {
         <meta property="og:title" content="All Products - AfuMall" />
         <meta property="og:description" content="Browse all products on AfuMall marketplace." />
         <meta property="og:image" content="/default-og-image.png" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <script type="application/ld+json">{JSON.stringify({ "@context": "https://schema.org", "@type": "ItemList", itemListElement: jsonLdProducts.map((p, i) => ({ "@type": "ListItem", position: i + 1, item: p })) })}</script>
       </Helmet>
 
       <div className="container mx-auto px-2 md:px-4 py-3 md:py-6 font-sans">
@@ -212,9 +208,7 @@ export const Products = () => {
               <SelectContent>
                 <SelectItem value="all">All Categories</SelectItem>
                 {categories.map(category => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
+                  <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -224,13 +218,11 @@ export const Products = () => {
         <div className="flex flex-wrap gap-2 mb-4 md:mb-6">
           {aiSearchActive && (
             <Button onClick={handleResetSearch} variant="outline" size="sm" className="gap-1">
-              <X className="h-3 w-3" />
-              Clear AI Search
+              <X className="h-3 w-3" /> Clear AI Search
             </Button>
           )}
           <Button onClick={handleAIRanking} disabled={aiRanking || loading} variant="secondary" size="sm" className="gap-1">
-            <Sparkles className="h-3 w-3" />
-            {aiRanking ? 'Ranking...' : 'AI Smart Sort'}
+            <Sparkles className="h-3 w-3" /> {aiRanking ? 'Ranking...' : 'AI Smart Sort'}
           </Button>
         </div>
 
@@ -245,8 +237,7 @@ export const Products = () => {
         {aiSearchActive && (
           <div className="mb-4 md:mb-6">
             <p className="text-xs md:text-sm text-muted-foreground flex items-center gap-1">
-              <Sparkles className="h-3 w-3 text-primary" />
-              AI Search Results ({filteredProducts.length} products)
+              <Sparkles className="h-3 w-3 text-primary" /> AI Search Results ({filteredProducts.length} products)
             </p>
           </div>
         )}
