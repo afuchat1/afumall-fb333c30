@@ -16,7 +16,6 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery';
 import { ProductVariantSelector } from '@/components/products/ProductVariantSelector';
 import { Helmet } from 'react-helmet-async';
 
-// 💡 BEST PRACTICE: Define 'origin' outside the component body if it's constant.
 const origin = typeof window !== 'undefined' ? window.location.origin : '';
 
 export const ProductDetail = () => {
