@@ -16,6 +16,9 @@ import { ProductImageGallery } from '@/components/products/ProductImageGallery';
 import { ProductVariantSelector } from '@/components/products/ProductVariantSelector';
 import { Helmet } from 'react-helmet-async';
 
+// 💡 BEST PRACTICE: Define 'origin' outside the component body if it's constant.
+const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
 export const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -199,7 +202,6 @@ export const ProductDetail = () => {
   const handleWhatsAppOrder = () => {
     const productUrl = window.location.href;
     const price = (isOnSale ? product.discount_price : product.price_retail)?.toLocaleString();
-    const productImage = images.length > 0 ? images[0].image_url : product.image_url;
     const message = `Hi! I'd like to order:\n\n${product.name}\nPrice: UGX ${price}\n\nProduct link: ${productUrl}`;
     // WhatsApp link will now show product image preview
     window.open(`https://wa.me/256703464913?text=${encodeURIComponent(message)}`, '_blank');
@@ -209,16 +211,22 @@ export const ProductDetail = () => {
     window.open('tel:+256760635265', '_self');
   };
 
-  const origin = typeof window !== 'undefined' ? window.location.origin : '';
-
   return (
     <Layout>
       <Helmet>
-        <title>{product.name} - AfuMall</title>
-        <meta name="description" content={product.description || 'Check out this product on AfuMall.'} />
+        {/* ✅ FIX: Dynamic Title is now highly descriptive and includes price */}
+        <title>{product.name} | UGX {product.price_retail.toLocaleString()} - AfuMall</title>
+        
+        {/* ✅ FIX: Dynamic Description uses price and product description snippet */}
+        <meta name="description" content={`Buy ${product.name} for UGX ${product.price_retail.toLocaleString()}. ${product.description ? product.description.substring(0, 150) : 'Check out this latest product'} on AfuMall.`} />
+        
+        {/* ✅ CRITICAL FIX: Canonical Tag added */}
+        <link rel="canonical" href={`${origin}/product/${product.id}`} />
+
+        {/* Open Graph Tags: Ensure these have the correct dynamic data */}
         <meta property="og:title" content={product.name} />
         <meta property="og:description" content={product.description || ''} />
-        <meta property="og:image" content={images.length > 0 ? images[0].image_url : product.image_url || '/default-og-image.png'} />
+        <meta property="og:image" content={images.length > 0 ? images[0].image_url : product.image_url || `${origin}/default-og-image.png`} />
         <meta property="og:url" content={`${origin}/product/${product.id}`} />
         <meta name="twitter:card" content="summary_large_image" />
       </Helmet>
@@ -257,7 +265,7 @@ export const ProductDetail = () => {
                     <Star
                       key={star}
                       className={`h-4 w-4 ${
-                        star <= averageRating ? 'fill-yellow-400 text-yellow-400' : 'text-muted'
+                        star <= averageRating ? 'fill-yellow-400 text-yellow-400' : 'text-yellow-400'
                       }`}
                     />
                   ))}
